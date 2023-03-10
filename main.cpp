@@ -1,4 +1,6 @@
 #include <iostream>
+#include <conio.h>
+#include <iomanip>
 
 using namespace std;
 
@@ -39,6 +41,32 @@ void pointerUsageExample () {
     cout << a.up->i;
     cout << endl << a.up->up->i;
     cout << endl << a.up->up->up->i;
+}
+
+void display_system (system_ network, string title = "Table") {
+    factoryStorage* currentFactory = network.firstFactory;
+    factoryStorage* currentStorage = network.firstStorage;
+
+    int width = 15;
+    int n_source = 0;
+    int n_destination = 0;
+    do {
+        n_source ++;
+        currentFactory = currentFactory->next;
+    } while (currentFactory->next != NULL);
+    do {
+        n_destination ++;
+        currentStorage = currentStorage->next;
+    } while (currentStorage->next != NULL);
+
+    cout << title << endl;
+    for (int j=0; j<(n_destination + 1); j++) {
+        cout << setfill('=') << left << setw(width) << "";
+    }
+    cout << endl;
+
+
+
 }
 
 system_ northWestCorner (system_ network) {
@@ -168,14 +196,10 @@ int main() {
         }
     }
 
-    network = northWestCorner(network);
+    //network = northWestCorner(network);
+    cout << endl << endl;
 
-    cout << network.firstCell->i;
-    cout << endl << network.firstCell->j;
-    cout << endl << network.firstCell->price;
-
-
-
+    display_system(network, "North-West Corner");
 
     return 0;
 }
