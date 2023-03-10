@@ -18,7 +18,14 @@ struct factoryStorage {
     bool valid = false;
     int amount;
     int currentAmount;
+    int index;
     factoryStorage* next = NULL;
+};
+
+struct system_ {
+    cell* firstCell;
+    factoryStorage* firstFactory;
+    factoryStorage* firstStorage;
 };
 
 void pointerUsageExample () {
@@ -34,9 +41,61 @@ void pointerUsageExample () {
     cout << endl << a.up->up->up->i;
 }
 
+system_ northWestCorner (system_ network) {
+    factoryStorage* currentFactory = network.firstFactory;
+    factoryStorage* currentStorage = network.firstStorage;
+    cell* pointerFirstCellOfRow;
+    cell* pointerCell;
+    int indexCellRow, indexCellColumn;
+
+    do {
+        indexCellRow = currentFactory->index;
+        indexCellColumn = currentStorage->index;
+
+        pointerFirstCellOfRow = network.firstCell;
+        while (pointerFirstCellOfRow->i < indexCellRow && pointerFirstCellOfRow->down != NULL) {
+            pointerFirstCellOfRow = pointerFirstCellOfRow->down;
+        }
+        if (pointerFirstCellOfRow->i != indexCellRow) {
+            system("CLS");
+            cout << "Internal error";
+        }
+        pointerCell = pointerFirstCellOfRow;
+        while (pointerCell->j < indexCellColumn && pointerCell->right != NULL) {
+            pointerCell = pointerCell->right;
+        }
+        if (pointerCell->j != indexCellColumn) {
+            system("CLS");
+            cout << "Internal error";
+        }
+
+        if (currentFactory->currentAmount < currentStorage->currentAmount) {
+            pointerCell->amount = currentFactory->currentAmount;
+            currentStorage->currentAmount -= currentFactory->currentAmount;
+            currentFactory->currentAmount = 0;
+            currentFactory = currentFactory->next;
+        } else if (currentFactory->currentAmount > currentStorage->currentAmount) {
+            pointerCell->amount = currentStorage->currentAmount;
+            currentFactory->currentAmount -= currentStorage->currentAmount;
+            currentStorage->currentAmount = 0;
+            currentStorage = currentStorage->next;
+        } else {
+            pointerCell->amount = currentFactory->currentAmount = 0;
+            currentFactory->currentAmount = 0;
+            currentStorage->currentAmount = 0;
+            currentFactory = currentFactory->next;
+            currentStorage = currentStorage->next;
+        }
+    } while (currentFactory->next == NULL && currentStorage->next == NULL);
+
+    return network;
+}
+
 int main() {
+    system_ network;
     cell destination[100][100];
     factoryStorage factory[100], storage[100];
+    factoryStorage* currentFactory, currentStorage;
     int numberOfFactories, numberOfStorages, totalDemand = 0, totalSupply = 0;
 
     cout << "Number of Factories: "; cin >> numberOfFactories;
@@ -47,16 +106,27 @@ int main() {
         cout << "Factory - " << i << ": " ; cin >> factory[i].amount;
         factory[i].currentAmount = factory[i].amount;
         factory[i].valid = true;
+        factory[i].index = i;
         totalSupply += factory[i].amount;
+        if ((i-1 >= 0) && factory[i-1].valid) {
+            factory[i-1].next = &factory[i];
+        }
+        if (i == 0) {
+            network.firstFactory = &factory[i];
+        }
     }
     //input amount of demand for each storage
     for (int i = 0; i < numberOfStorages; i++) {
         cout << "Storage - " << i << ": " ; cin >> storage[i].amount;
         storage[i].currentAmount = storage[i].amount;
         storage[i].valid = true;
+        storage[i].index = i;
         totalDemand += storage[i].amount;
         if ((i-1 >= 0) && storage[i-1].valid) {
             storage[i-1].next = &storage[i];
+        }
+        if (i == 0) {
+            network.firstStorage = &storage[i];
         }
     }
     //totalDemand and totalSupply must be equal (balance)
@@ -71,6 +141,9 @@ int main() {
             destination[i][j].j = j;
             destination[i][j].valid = true;
             cout << "Factory " << i << " - Storage " << j << ": "; cin >> destination[i][j].price;
+            if (i==0 && j==0) {
+                network.firstCell = &destination[i][j];
+            }
         }
     }
     //Connecting all cells
@@ -94,6 +167,13 @@ int main() {
             }
         }
     }
+
+    network = northWestCorner(network);
+
+    cout << network.firstCell->i;
+    cout << endl << network.firstCell->j;
+    cout << endl << network.firstCell->price;
+
 
 
 
