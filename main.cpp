@@ -46,6 +46,8 @@ void pointerUsageExample () {
 void display_system (system_ network, string title = "Table") {
     factoryStorage* currentFactory = network.firstFactory;
     factoryStorage* currentStorage = network.firstStorage;
+    cell* pointerFirstCellOfRow;
+    cell* pointerCell;
 
     int width = 15;
     int n_source = 0;
@@ -54,18 +56,56 @@ void display_system (system_ network, string title = "Table") {
         n_source ++;
         currentFactory = currentFactory->next;
     } while (currentFactory->next != NULL);
+    currentFactory = network.firstFactory;
     do {
         n_destination ++;
         currentStorage = currentStorage->next;
     } while (currentStorage->next != NULL);
+    currentStorage = network.firstStorage;
 
     cout << title << endl;
     for (int j=0; j<(n_destination + 1); j++) {
         cout << setfill('=') << left << setw(width) << "";
     }
+    cout << "==";
     cout << endl;
 
+    do {
+        pointerFirstCellOfRow = network.firstCell;
+        while (pointerFirstCellOfRow->i < currentFactory->index) {
+            pointerFirstCellOfRow = pointerFirstCellOfRow->down;
+        }
 
+        pointerCell = pointerFirstCellOfRow;
+        do {
+            cout << setfill(' ') << left << setw(width) << "| " + to_string(pointerCell->price);
+            pointerCell = pointerCell->right;
+        } while (pointerCell!= NULL);
+        // cout << setfill(' ') << left << setw(width) << "|| ";
+        cout << setfill(' ') << left << setw(width) << "|| " + to_string(currentFactory->amount);
+        cout << endl;
+        pointerCell = pointerFirstCellOfRow;
+        do {
+            cout << setfill(' ') << left << setw(width) << "| " + to_string(pointerCell->amount);
+            pointerCell = pointerCell->right;
+        } while (pointerCell!= NULL);
+        cout << setfill(' ') << left << setw(width) << "|| ";
+        cout << endl;
+        pointerCell = pointerFirstCellOfRow;
+        do {
+            cout << setfill('-') << left << setw(width) << "";
+            pointerCell = pointerCell->right;
+        } while (pointerCell!= NULL);
+        cout << "--";
+        cout << endl;
+
+        currentFactory = currentFactory->next;
+    } while (currentFactory != NULL);
+
+    do {
+        cout << setfill(' ') << left << setw(width) << "  " + to_string(currentStorage->amount);
+        currentStorage = currentStorage->next;
+    } while (currentStorage != NULL);
 
 }
 
@@ -108,13 +148,13 @@ system_ northWestCorner (system_ network) {
             currentStorage->currentAmount = 0;
             currentStorage = currentStorage->next;
         } else {
-            pointerCell->amount = currentFactory->currentAmount = 0;
+            pointerCell->amount = currentFactory->currentAmount;
             currentFactory->currentAmount = 0;
             currentStorage->currentAmount = 0;
             currentFactory = currentFactory->next;
             currentStorage = currentStorage->next;
         }
-    } while (currentFactory->next == NULL && currentStorage->next == NULL);
+    } while (currentFactory != NULL && currentStorage != NULL);
 
     return network;
 }
@@ -196,7 +236,7 @@ int main() {
         }
     }
 
-    //network = northWestCorner(network);
+    network = northWestCorner(network);
     cout << endl << endl;
 
     display_system(network, "North-West Corner");
