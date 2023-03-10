@@ -28,6 +28,7 @@ struct system_ {
     cell* firstCell;
     factoryStorage* firstFactory;
     factoryStorage* firstStorage;
+    int z = NULL;
 };
 
 void pointerUsageExample () {
@@ -106,7 +107,24 @@ void display_system (system_ network, string title = "Table") {
         cout << setfill(' ') << left << setw(width) << "  " + to_string(currentStorage->amount);
         currentStorage = currentStorage->next;
     } while (currentStorage != NULL);
+    cout << setfill(' ') << left << setw(width) << "   Z = " + to_string(network.z);
+}
 
+int zValue (system_ network) {
+    cell* pointerFirstCellOfRow = network.firstCell;
+    cell* pointerCell;
+    int z = 0;
+
+    do {
+        pointerCell = pointerFirstCellOfRow;
+        do {
+            z += (pointerCell->amount * pointerCell->price);
+            pointerCell = pointerCell->right;
+        } while (pointerCell != NULL);
+        pointerFirstCellOfRow = pointerFirstCellOfRow->down;
+    } while (pointerFirstCellOfRow != NULL);
+
+    return z;
 }
 
 system_ northWestCorner (system_ network) {
@@ -156,6 +174,7 @@ system_ northWestCorner (system_ network) {
         }
     } while (currentFactory != NULL && currentStorage != NULL);
 
+    network.z = zValue(network);
     return network;
 }
 
