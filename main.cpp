@@ -328,14 +328,6 @@ system_ northWestCorner (system_ network) {
 // }
 
 system_ steppingStone (system_ network_) {
-    // cell dummy;
-    // cycle result = cellSteppingStone(*network.firstCell->down, *network.firstCell->down, 0, dummy, network);
-    // if (result.up->found) {
-    //     cout << "Found";
-    // } else {
-    //     cout << "Not found";
-    // }
-
     factoryStorage *pointerFactory = network_.firstFactory, *pointerStorage = network_.firstStorage;
     cell *pointerCell = network_.firstCell;
     int n_factories = 0, n_storages = 0;
@@ -395,7 +387,43 @@ system_ steppingStone (system_ network_) {
         pointerStorage = network_.firstStorage;
     }
 
-    // 
+    // connecting all cells, storages, and factories that had been created
+    cell *firstCell = destination[0][0];
+    factoryStorage *firstStorage = storage[0], *firstFactory = factory[0];
+    for (int i = 0; i < n_factories; i++) {
+        for (int j = 0; j < n_storages; j++) {
+            // left
+            if ((j-1) > 0) {
+                destination[i][j]->left = destination[i][j-1];
+            } else {
+                destination[i][j]->left = NULL;
+            }
+            //right
+            if ((j+1) < n_storages) {
+                destination[i][j]->right = destination[i][j+1];
+            } else {
+                destination[i][j]->right = NULL;
+            }
+            //up
+            if ((i-1) > 0) {
+                destination[i][j]->up = destination[i-1][j];
+            } else {
+                destination[i][j]->up = NULL;
+            }
+            //down
+            if ((i+1) < n_factories) {
+                destination[i][j]->down = destination[i+1][j];
+            } else {
+                destination[i][j]->down = NULL;
+            }
+        }
+    }
+    for (int i = 0; i < (n_factories-1); i++) {
+        factory[i]->next = factory[i+1];
+    }
+    for (int i = 0; i < (n_storages-1); i++) {
+        storage[i]->next = storage[i+1];
+    }
 
     
 
