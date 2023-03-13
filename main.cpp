@@ -327,6 +327,60 @@ system_ northWestCorner (system_ network) {
 
 // }
 
+cell *cellSteppingStone(cell *&target, cell *&current, int level, system_ *&network) {
+    cell *pointerCell = current;
+    cell *dummy = new cell;
+    if (current->i == target->i && current->j == target->j && level > 0) {
+        cout << "level: " << level << endl;
+        return current;
+    }
+
+    //left
+    pointerCell = current->left;
+    while (pointerCell->amount  == 0 && pointerCell != NULL) {
+        pointerCell = pointerCell->left;
+    }
+    if (pointerCell->amount > 0 && pointerCell != NULL) {
+        cout << "left" << endl;
+        return cellSteppingStone(target, pointerCell, level+1, network);
+    }
+
+    //right
+    pointerCell = current->right;
+    while (pointerCell->amount == 0 && pointerCell != NULL) {
+        pointerCell = pointerCell->right;
+    }
+    if (pointerCell->amount > 0 && pointerCell != NULL) {
+        cout << "right";
+        return cellSteppingStone(target, pointerCell, level+1, network);
+    }
+
+    //up
+    pointerCell = current->up;
+    while (pointerCell->amount == 0 && pointerCell != NULL) {
+        pointerCell = pointerCell->up;
+    }
+    if (pointerCell->amount > 0 && pointerCell != NULL) {
+        cout << "up";
+        return cellSteppingStone(target, pointerCell, level+1, network);
+    }
+
+    //down
+    pointerCell = current->down;
+    while (pointerCell->amount == 0 && pointerCell != NULL) {
+        pointerCell = pointerCell->down;
+    }
+    if (pointerCell->amount > 0 && pointerCell != NULL) {
+        cout << "down";
+        return cellSteppingStone(target, pointerCell, level+1, network);
+    }
+    
+    cout << "nothing";
+    
+
+    return network->firstCell;
+}
+
 system_ steppingStone (system_ network_) {
     factoryStorage *pointerFactory = network_.firstFactory, *pointerStorage = network_.firstStorage;
     cell *pointerCell = network_.firstCell;
@@ -393,39 +447,29 @@ system_ steppingStone (system_ network_) {
     for (int i = 0; i < n_factories; i++) {
         for (int j = 0; j < n_storages; j++) {
             // left
-            if ((j-1) > 0) {
-                destination[i][j]->left = destination[i][j-1];
-            } else {
-                destination[i][j]->left = NULL;
-            }
+            destination[i][j]->left = (j-1) > 0 ? destination[i][j-1] : NULL;
             //right
-            if ((j+1) < n_storages) {
-                destination[i][j]->right = destination[i][j+1];
-            } else {
-                destination[i][j]->right = NULL;
-            }
+            destination[i][j]->right = (j+1) < n_storages ? destination[i][j+1] : NULL;
             //up
-            if ((i-1) > 0) {
-                destination[i][j]->up = destination[i-1][j];
-            } else {
-                destination[i][j]->up = NULL;
-            }
+            destination[i][j]->up = (i-1) > 0 ? destination[i-1][j] : NULL;
             //down
-            if ((i+1) < n_factories) {
-                destination[i][j]->down = destination[i+1][j];
-            } else {
-                destination[i][j]->down = NULL;
-            }
+            destination[i][j]->down = (i+1) < n_factories ? destination[i+1][j] : NULL;
         }
     }
-    for (int i = 0; i < (n_factories-1); i++) {
-        factory[i]->next = factory[i+1];
+    for (int i = 0; i < n_factories; i++) {
+        factory[i]->next = (i+1) < n_factories ? factory[i+1] : NULL;
     }
-    for (int i = 0; i < (n_storages-1); i++) {
-        storage[i]->next = storage[i+1];
+    for (int i = 0; i < n_storages; i++) {
+        storage[i]->next = (i+1) < n_storages ? storage[i+1] : NULL;
     }
-
     
+    system_ *network = new system_;
+    network->firstCell = firstCell;
+    network->firstFactory = firstFactory;
+    network->firstStorage = firstStorage;
+
+    cell *result = cellSteppingStone(network->firstCell->down, network->firstCell->down, 0, network);
+    cout << result->i << ";" << result->j;
 
 
     return network_;
