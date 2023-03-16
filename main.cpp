@@ -71,6 +71,7 @@ struct steppingStoneCycle {
     int level = 0;
     int score;
     system_ *network;
+    bool valid = false;
 };
 
 
@@ -342,14 +343,24 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
                     domain->level = level + 1;
                     if (!(domain->cellChain == NULL)) {
                         pointerCellChain = domain->cellChain;
-                        while (pointerCellChain->next != NULL) {
-                            pointerCellChain = pointerCellChain->next;
+                        if (direction_ == direction && direction != "") {
+                            while (pointerCellChain->next->next != NULL) {
+                                pointerCellChain = pointerCellChain->next;
+                            }
+                        } else {
+                            while (pointerCellChain->next != NULL) {
+                                pointerCellChain = pointerCellChain->next;
+                            }                        
                         }
                         pointerCellChain->next = pointerCell;
                     } else {
                         domain->cellChain = pointerCell;
                     }
-                    return checkSteppingStone(domain, "up");
+
+                    result = checkSteppingStone(domain, "up");
+                    if (result->valid) {
+                        return result;
+                    }
                 }
             } else if (direction_ == "right") {
                 pointerCell = current->right;
@@ -373,14 +384,24 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
                     domain->level = level + 1;
                     if (!(domain->cellChain == NULL)) {
                         pointerCellChain = domain->cellChain;
-                        while (pointerCellChain->next != NULL) {
-                            pointerCellChain = pointerCellChain->next;
+                        if (direction_ == direction && direction != "") {
+                            while (pointerCellChain->next->next != NULL) {
+                                pointerCellChain = pointerCellChain->next;
+                            }
+                        } else {
+                            while (pointerCellChain->next != NULL) {
+                                pointerCellChain = pointerCellChain->next;
+                            }                        
                         }
                         pointerCellChain->next = pointerCell;
                     } else {
                         domain->cellChain = pointerCell;
                     }
-                    return checkSteppingStone(domain, "right");
+
+                    result = checkSteppingStone(domain, "right");
+                    if (result->valid) {
+                        return result;
+                    }
                 }
             } else if (direction_ == "down") {
                 pointerCell = current->down;
@@ -397,21 +418,31 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
                         }
                         return domain;
                     }
-                    pointerCell = pointerCell->right;
+                    pointerCell = pointerCell->down;
                 }
                 if (!(pointerCell == NULL) && pointerCell->amount > 0) {
                     domain->current = pointerCell;
                     domain->level = level + 1;
                     if (!(domain->cellChain == NULL)) {
                         pointerCellChain = domain->cellChain;
-                        while (pointerCellChain->next != NULL) {
-                            pointerCellChain = pointerCellChain->next;
+                        if (direction_ == direction && direction != "") {
+                            while (pointerCellChain->next->next != NULL) {
+                                pointerCellChain = pointerCellChain->next;
+                            }
+                        } else {
+                            while (pointerCellChain->next != NULL) {
+                                pointerCellChain = pointerCellChain->next;
+                            }                        
                         }
                         pointerCellChain->next = pointerCell;
                     } else {
                         domain->cellChain = pointerCell;
                     }
-                    return checkSteppingStone(domain, "down");
+
+                    result = checkSteppingStone(domain, "down");
+                    if (result->valid) {
+                        return result;
+                    }
                 }
             } else if (direction_ == "left") {
                 pointerCell = current->left;
@@ -428,26 +459,36 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
                         }
                         return domain;
                     }
-                    pointerCell = pointerCell->right;
+                    pointerCell = pointerCell->left;
                 }
                 if (!(pointerCell == NULL) && pointerCell->amount > 0) {
                     domain->current = pointerCell;
                     domain->level = level + 1;
                     if (!(domain->cellChain == NULL)) {
                         pointerCellChain = domain->cellChain;
-                        while (pointerCellChain->next != NULL) {
-                            pointerCellChain = pointerCellChain->next;
+                        if (direction_ == direction && direction != "") {
+                            while (pointerCellChain->next->next != NULL) {
+                                pointerCellChain = pointerCellChain->next;
+                            }
+                        } else {
+                            while (pointerCellChain->next != NULL) {
+                                pointerCellChain = pointerCellChain->next;
+                            }                        
                         }
                         pointerCellChain->next = pointerCell;
                     } else {
                         domain->cellChain = pointerCell;
                     }
-                    return checkSteppingStone(domain, "left");
+
+                    result = checkSteppingStone(domain, "left");
+                    if (result->valid) {
+                        return result;
+                    }
                 }
             }
         }
     }
-
+    
     return dummy;
 }
 
@@ -543,9 +584,10 @@ system_ steppingStone (system_ network_) {
     // cout << result->i << ";" << result->j << ";" << result->price;
 
     steppingStoneCycle *domain = new steppingStoneCycle;
-    domain->target = network->firstCell->down;
-    domain->current = network->firstCell->down;
+    domain->target = network->firstCell->down->down;
+    domain->current = network->firstCell->down->down;
     domain->network = network;
+    domain->valid = true;
 
     steppingStoneCycle *result = checkSteppingStone(domain);
     cout << result->current->i << ";" << result->current->j << ";" << result->current->price << endl;
