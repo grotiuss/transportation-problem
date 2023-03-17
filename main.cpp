@@ -449,7 +449,7 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
                     } else {
                         domain->cellChain = pointerCell;
                     }
-
+                    
                     result = checkSteppingStone(domain, "up");
                     if (result->valid) {
                         return result;
@@ -481,7 +481,7 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
                     } else {
                         domain->cellChain = pointerCell;
                     }
-
+                    
                     result = checkSteppingStone(domain, "right");
                     if (result->valid) {
                         return result;
@@ -513,7 +513,7 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
                     } else {
                         domain->cellChain = pointerCell;
                     }
-
+                    
                     result = checkSteppingStone(domain, "down");
                     if (result->valid) {
                         return result;
@@ -545,7 +545,7 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
                     } else {
                         domain->cellChain = pointerCell;
                     }
-
+                    
                     result = checkSteppingStone(domain, "left");
                     if (result->valid) {
                         return result;
@@ -568,9 +568,10 @@ system_ steppingStone (system_ network_) {
     cout << result->current->i << ";" << result->current->j << ";" << result->current->price << endl;
     cell *pointerCellChain = result->cellChain;
     while ((!(pointerCellChain == NULL))) {
-        cout << pointerCellChain->i << "," << pointerCellChain->j << endl;
+        cout << pointerCellChain->i << "," << pointerCellChain->j << ";" << pointerCellChain->price << endl;
         pointerCellChain = pointerCellChain->next;
     }
+    cout << result->score << endl;
 }
 
 int function_test(test domain1, test domain2) {
