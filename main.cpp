@@ -295,8 +295,8 @@ cell *cellSteppingStone(cell *&target, cell *&current, int level, system_ *&netw
     return dummy;
 }
 
-void rebuildingNetwork(steppingStoneCycle *&domain, system_ network) {
-    factoryStorage *pointerFactory, *pointerStorage;
+void rebuildingNetwork(steppingStoneCycle *&domain, system_ network, int indexTarget_i, int indexTarget_j) {
+    factoryStorage *pointerFactory = network.firstFactory, *pointerStorage = network.firstStorage;
     cell *pointerCell = network.firstCell;
     int n_factories = 0, n_storages = 0;
 
@@ -312,6 +312,7 @@ void rebuildingNetwork(steppingStoneCycle *&domain, system_ network) {
 
     pointerFactory = network.firstFactory;
     pointerStorage = network.firstStorage;
+
 
     // re-building network
     cell* destination[n_factories][n_storages];
@@ -384,8 +385,8 @@ void rebuildingNetwork(steppingStoneCycle *&domain, system_ network) {
     network_->firstStorage = firstStorage;
 
     domain = new steppingStoneCycle;
-    domain->target = destination[2][0];
-    domain->current = destination[2][0];
+    domain->target = destination[indexTarget_i][indexTarget_j];
+    domain->current = destination[indexTarget_i][indexTarget_j];
     domain->network = network_;
     domain->valid = true;
 
@@ -455,7 +456,7 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
                     // } else {
                     //     domain->cellChain = pointerCell;
                     // }
-                    
+
                     if (!(domain->cellChain == NULL)) {
                         pointerCellChain->next = pointerCell;
                     } else {
@@ -669,13 +670,21 @@ system_ steppingStone (system_ network_) {
     // domain->network = network;
     // domain->valid = true;
 
-    steppingStoneCycle *domain;
-    rebuildingNetwork(domain, network_);
-    cout << domain->target->i;
+    steppingStoneCycle *domain, *domain_;
+    rebuildingNetwork(domain, network_, 2, 0);
+    rebuildingNetwork(domain_, network_, 0, 2);
 
     steppingStoneCycle *result = checkSteppingStone(domain);
     cout << result->current->i << ";" << result->current->j << ";" << result->current->price << endl;
     cell *pointerCellChain = result->cellChain;
+    while ((!(pointerCellChain == NULL))) {
+        cout << pointerCellChain->i << "," << pointerCellChain->j << endl;
+        pointerCellChain = pointerCellChain->next;
+    }
+
+    steppingStoneCycle *result_ = checkSteppingStone(domain_);
+    cout << result_->current->i << ";" << result_->current->j << ";" << result_->current->price << endl;
+    pointerCellChain = result_->cellChain;
     while ((!(pointerCellChain == NULL))) {
         cout << pointerCellChain->i << "," << pointerCellChain->j << endl;
         pointerCellChain = pointerCellChain->next;
