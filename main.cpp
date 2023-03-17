@@ -444,19 +444,6 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
                     domain->current = pointerCell;
                     domain->level = level + 1;
 
-                    // if (!(domain->cellChain == NULL)) {
-                    //     if (direction_ == direction && direction != "") {
-                    //         pointerCellChain1 = domain->cellChain;
-                    //         while (pointerCellChain1->next != pointerCellChain) {
-                    //             pointerCellChain1 = pointerCellChain1->next;
-                    //         }
-                    //         pointerCellChain = pointerCellChain1;
-                    //     }
-                    //     pointerCellChain->next = pointerCell;
-                    // } else {
-                    //     domain->cellChain = pointerCell;
-                    // }
-
                     if (!(domain->cellChain == NULL)) {
                         pointerCellChain->next = pointerCell;
                     } else {
@@ -574,117 +561,12 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
 }
 
 system_ steppingStone (system_ network_) {
-    // factoryStorage *pointerFactory = network_.firstFactory, *pointerStorage = network_.firstStorage;
-    // cell *pointerCell = network_.firstCell;
-    // int n_factories = 0, n_storages = 0;
-
-    // // counting factories and storages
-    // while (!(pointerFactory == NULL)) {
-    //     n_factories ++;
-    //     pointerFactory = pointerFactory->next;
-    // }
-    // while (!(pointerStorage == NULL)) {
-    //     n_storages ++;
-    //     pointerStorage = pointerStorage->next;
-    // }
-
-    // pointerFactory = network_.firstFactory;
-    // pointerStorage = network_.firstStorage;
-
-    // // re-building network
-    // cell* destination[n_factories][n_storages];
-    // factoryStorage *factory[n_factories], *storage[n_storages];
-    // for (int i = 0; i < n_factories; i++) {
-    //     for (int j = 0; j < n_storages; j++) {
-    //         destination[i][j] = new cell;
-    //         while (pointerCell->i < i) {
-    //             pointerCell = pointerCell->down;
-    //         }
-    //         while (pointerCell->j < j) {
-    //             pointerCell = pointerCell->right;
-    //         }
-    //         destination[i][j]->valid = true;
-    //         destination[i][j]->i = pointerCell->i;
-    //         destination[i][j]->j = pointerCell->j;
-    //         destination[i][j]->price = pointerCell->price;
-    //         destination[i][j]->amount = pointerCell->amount;
-    //         pointerCell = network_.firstCell;
-    //     }
-    // }
-    // for (int i = 0; i < n_factories; i++) {
-    //     factory[i] = new factoryStorage;
-    //     while (pointerFactory->index < i) {
-    //         pointerFactory = pointerFactory->next;
-    //     }
-    //     factory[i]->valid = true;
-    //     factory[i]->amount = pointerFactory->amount;
-    //     factory[i]->currentAmount = pointerFactory->currentAmount;
-    //     factory[i]->index = pointerFactory->index;
-    //     pointerFactory = network_.firstFactory;
-    // }
-    // for (int i = 0; i < n_storages; i++) {
-    //     storage[i] = new factoryStorage;
-    //     while (pointerStorage->index < i) {
-    //         pointerStorage = pointerStorage->next;
-    //     }
-    //     storage[i]->valid = true;
-    //     storage[i]->amount = pointerStorage->amount;
-    //     storage[i]->currentAmount = pointerStorage->currentAmount;
-    //     storage[i]->index = pointerStorage->index;
-    //     pointerStorage = network_.firstStorage;
-    // }
-
-    // // connecting all cells, storages, and factories that had been created
-    // cell *firstCell = destination[0][0];
-    // factoryStorage *firstStorage = storage[0], *firstFactory = factory[0];
-    // for (int i = 0; i < n_factories; i++) {
-    //     for (int j = 0; j < n_storages; j++) {
-    //         // left
-    //         destination[i][j]->left = (j-1) >= 0 ? destination[i][j-1] : NULL;
-    //         //right
-    //         destination[i][j]->right = (j+1) < n_storages ? destination[i][j+1] : NULL;
-    //         //up
-    //         destination[i][j]->up = (i-1) >= 0 ? destination[i-1][j] : NULL;
-    //         //down
-    //         destination[i][j]->down = (i+1) < n_factories ? destination[i+1][j] : NULL;
-    //     }
-    // }
-    // for (int i = 0; i < n_factories; i++) {
-    //     factory[i]->next = (i+1) < n_factories ? factory[i+1] : NULL;
-    // }
-    // for (int i = 0; i < n_storages; i++) {
-    //     storage[i]->next = (i+1) < n_storages ? storage[i+1] : NULL;
-    // }
-
-    // system_ *network = new system_;
-    // network->firstCell = firstCell;
-    // network->firstFactory = firstFactory;
-    // network->firstStorage = firstStorage;
-
-    // // cell *result = cellSteppingStone(network->firstCell->down, network->firstCell->down, 0, network);
-    // // cout << result->i << ";" << result->j << ";" << result->price;
-
-    // steppingStoneCycle *domain = new steppingStoneCycle;
-    // domain->target = network->firstCell->down->down;
-    // domain->current = network->firstCell->down->down;
-    // domain->network = network;
-    // domain->valid = true;
-
-    steppingStoneCycle *domain, *domain_;
-    rebuildingNetwork(domain, network_, 2, 0);
-    rebuildingNetwork(domain_, network_, 0, 2);
+    steppingStoneCycle *domain;
+    rebuildingNetwork(domain, network_, 1, 0);
 
     steppingStoneCycle *result = checkSteppingStone(domain);
     cout << result->current->i << ";" << result->current->j << ";" << result->current->price << endl;
     cell *pointerCellChain = result->cellChain;
-    while ((!(pointerCellChain == NULL))) {
-        cout << pointerCellChain->i << "," << pointerCellChain->j << endl;
-        pointerCellChain = pointerCellChain->next;
-    }
-
-    steppingStoneCycle *result_ = checkSteppingStone(domain_);
-    cout << result_->current->i << ";" << result_->current->j << ";" << result_->current->price << endl;
-    pointerCellChain = result_->cellChain;
     while ((!(pointerCellChain == NULL))) {
         cout << pointerCellChain->i << "," << pointerCellChain->j << endl;
         pointerCellChain = pointerCellChain->next;
@@ -706,16 +588,6 @@ int function_test(test domain1, test domain2) {
 }
 
 int main() {
-    // test domain1, domain2;
-    // domain1.index = 1;
-    // domain2.index = 2;
-
-    // cout << function_test(domain1,domain2);
-    // cout << ";";
-    // cout << domain1.next->index;
-    // return 0;
-
-
     system_ network;
     cell destination[100][100];
     factoryStorage factory[100], storage[100];
