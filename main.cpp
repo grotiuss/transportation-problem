@@ -449,7 +449,7 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
                     } else {
                         domain->cellChain = pointerCell;
                     }
-                    
+
                     result = checkSteppingStone(domain, "up");
                     if (result->valid) {
                         return result;
@@ -481,7 +481,7 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
                     } else {
                         domain->cellChain = pointerCell;
                     }
-                    
+
                     result = checkSteppingStone(domain, "right");
                     if (result->valid) {
                         return result;
@@ -513,7 +513,7 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
                     } else {
                         domain->cellChain = pointerCell;
                     }
-                    
+
                     result = checkSteppingStone(domain, "down");
                     if (result->valid) {
                         return result;
@@ -545,7 +545,7 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
                     } else {
                         domain->cellChain = pointerCell;
                     }
-                    
+
                     result = checkSteppingStone(domain, "left");
                     if (result->valid) {
                         return result;
@@ -561,17 +561,70 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
 }
 
 system_ steppingStone (system_ network_) {
-    steppingStoneCycle *domain;
-    rebuildingNetwork(domain, network_, 1, 0);
+    steppingStoneCycle *domain, *result;
+    // rebuildingNetwork(domain, network_, 1, 0);
 
-    steppingStoneCycle *result = checkSteppingStone(domain);
-    cout << result->current->i << ";" << result->current->j << ";" << result->current->price << endl;
-    cell *pointerCellChain = result->cellChain;
-    while ((!(pointerCellChain == NULL))) {
-        cout << pointerCellChain->i << "," << pointerCellChain->j << ";" << pointerCellChain->price << endl;
-        pointerCellChain = pointerCellChain->next;
+
+    int indexOfCellTarget_i, indexOfCellTarget_j, minScore = 0, score, countCellChain;
+    cell *pointerCell = network_.firstCell;
+    cell *pointerCellChain;
+
+    factoryStorage *pointerFactory = network_.firstFactory, *pointerStorage = network_.firstStorage;
+    int nFactories = 0, nStorages = 0;
+    // counting factories and storages
+    while (!(pointerFactory == NULL)) {
+        nFactories ++;
+        pointerFactory = pointerFactory->next;
     }
-    cout << result->score << endl;
+    while (!(pointerStorage == NULL)) {
+        nStorages ++;
+        pointerStorage = pointerStorage->next;
+    }
+
+    for (int i = 0; i < nFactories; i++) {
+        for (int j = 0; j < nStorages; j++) {
+            while (pointerCell->i < i) {
+                pointerCell = pointerCell->down;
+            }
+            while (pointerCell->j < j) {
+                pointerCell = pointerCell->right;
+            }
+
+            rebuildingNetwork(domain, network_, pointerCell->i, pointerCell->j);
+            if (pointerCell->amount == 0) {
+                result = NULL;
+                result = checkSteppingStone(domain);
+                pointerCellChain = result->cellChain;
+                countCellChain = 0;
+                score = 0;
+                cout << "===================" << endl;
+                while (!(pointerCellChain == NULL)) {
+                    countCellChain ++;
+                    // score += (((-1)^countCellChain) * pointerCellChain->price);
+                    score += countCellChain % 2 == 0 ? pointerCellChain->price : ((-1)*pointerCellChain->price);
+                    cout << pointerCellChain->i << "," << pointerCellChain->j << ";" << pointerCellChain->price << ";" << (((-1)^countCellChain) * pointerCellChain->price) << ";" << score << ";" << countCellChain <<endl;
+                    pointerCellChain = pointerCellChain->next;
+                }
+                if (score < minScore) {
+                    minScore = score;
+                    indexOfCellTarget_i = i;
+                    indexOfCellTarget_j = j;
+                }
+            }
+        }
+    }
+    cout << indexOfCellTarget_i << "," << indexOfCellTarget_j << ";" << minScore;
+
+    return network_;
+
+    // steppingStoneCycle *result = checkSteppingStone(domain);
+    // cout << result->current->i << ";" << result->current->j << ";" << result->current->price << endl;
+    // cell *pointerCellChain = result->cellChain;
+    // while ((!(pointerCellChain == NULL))) {
+    //     cout << pointerCellChain->i << "," << pointerCellChain->j << ";" << pointerCellChain->price << endl;
+    //     pointerCellChain = pointerCellChain->next;
+    // }
+    // cout << result->score << endl;
 }
 
 int function_test(test domain1, test domain2) {
