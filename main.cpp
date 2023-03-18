@@ -43,7 +43,7 @@ struct steppingStoneCycle {
     cell *cellChain = NULL;
     int level = 0;
     int score;
-    system_ *network;
+    // system_ *network;
     bool valid = false;
 };
 
@@ -144,6 +144,8 @@ int zValue (system_ network) {
 
     return z;
 }
+
+// system_ revertDataType(steppingStoneCycl*& )
 
 system_ northWestCorner (system_ network) {
     factoryStorage* currentFactory = network.firstFactory;
@@ -288,7 +290,7 @@ void rebuildingNetwork(steppingStoneCycle *&domain, system_ network, int indexTa
     domain = new steppingStoneCycle;
     domain->target = destination[indexTarget_i][indexTarget_j];
     domain->current = destination[indexTarget_i][indexTarget_j];
-    domain->network = network_;
+    // domain->network = network_;
     domain->valid = true;
 
 }
@@ -318,6 +320,11 @@ void resolveSteppingStoneCellChain(steppingStoneCycle *&result) {
         pointerCell[1] = pointerCell[0]->next;
         pointerCell[2] = pointerCell[1]->next;
     }
+}
+
+void updateNetwork(steppingStoneCycle *&source) {
+    int numberOfFactories = 0, numberOfStorages = 0;
+
 }
 
 steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direction = "") {
@@ -492,97 +499,117 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
     return dummy;
 }
 
-system_ steppingStone (system_ network_) {
-    // do {
-
-    // }
-
+system_ steppingStone (system_ network) {
     steppingStoneCycle *domain, *result;
+    int indexOfCellTarget_i, indexOfCellTarget_j, minScore, score, countCellChain;
+    cell *pointerCell, *pointerCellChain;
 
-    int indexOfCellTarget_i, indexOfCellTarget_j, minScore = 0, score, countCellChain;
-    cell *pointerCell = network_.firstCell;
-    cell *pointerCellChain;
+    factoryStorage *pointerFactory, *pointerStorage;
+    int nFactories, nStorages;
 
-    factoryStorage *pointerFactory = network_.firstFactory, *pointerStorage = network_.firstStorage;
-    int nFactories = 0, nStorages = 0;
-    // counting factories and storages
-    while (!(pointerFactory == NULL)) {
-        nFactories ++;
-        pointerFactory = pointerFactory->next;
-    }
-    while (!(pointerStorage == NULL)) {
-        nStorages ++;
-        pointerStorage = pointerStorage->next;
-    }
+    int amountChanges;
 
-    for (int i = 0; i < nFactories; i++) {
-        for (int j = 0; j < nStorages; j++) {
-            while (pointerCell->i < i) {
+    do {
+
+        // counting factories and storages
+        pointerCell = network.firstCell;
+        pointerFactory = network.firstFactory;
+        pointerStorage = network.firstStorage;
+        nFactories = 0;
+        nStorages = 0;
+        while (!(pointerFactory == NULL)) {
+            nFactories ++;
+            pointerFactory = pointerFactory->next;
+        }
+        while (!(pointerStorage == NULL)) {
+            nStorages ++;
+            pointerStorage = pointerStorage->next;
+        }
+
+        for (int i = 0; i < nFactories; i++) {
+            for (int j = 0; j < nStorages; j++) {
+                while (pointerCell->i < i) {
+                    pointerCell = pointerCell->down;
+                }
+                while (pointerCell->j < j) {
+                    pointerCell = pointerCell->right;
+                }
+
+                rebuildingNetwork(domain, network, pointerCell->i, pointerCell->j);
+                if (pointerCell->amount == 0) {
+                    result = NULL;
+                    result = checkSteppingStone(domain);
+                    resolveSteppingStoneCellChain(result);
+                    pointerCellChain = result->cellChain;
+                    countCellChain = 0;
+                    score = 0;
+                    while (!(pointerCellChain == NULL)) {
+                        countCellChain ++;
+                        score += countCellChain % 2 == 0 ? pointerCellChain->price : ((-1)*pointerCellChain->price);
+                        pointerCellChain = pointerCellChain->next;
+                    }
+                    if (score < minScore) {
+                        minScore = score;
+                        indexOfCellTarget_i = i;
+                        indexOfCellTarget_j = j;
+                    }
+                }
+                pointerCell = network.firstCell;
+            }
+        }
+
+        cout << "minScore: " << minScore << endl;
+
+        rebuildingNetwork(domain, network, indexOfCellTarget_i, indexOfCellTarget_j);
+        result = NULL;
+        result = checkSteppingStone(domain);
+        resolveSteppingStoneCellChain(result);
+
+        pointerCellChain = result->cellChain;
+        amountChanges = NULL; // nilai minimum dari variable keluar
+        countCellChain = 0;
+        while (!(pointerCellChain == NULL)) {
+            countCellChain++;
+            if (amountChanges) {
+                if (countCellChain % 2 != 0 && pointerCellChain->amount < amountChanges) {
+                    amountChanges = pointerCellChain->amount;
+                }
+            } else {
+                if (countCellChain % 2 != 0) {
+                    amountChanges = pointerCellChain->amount;
+                }
+            }
+            pointerCellChain = pointerCellChain->next;
+        }
+        pointerCellChain = result->cellChain;
+        countCellChain = 0;
+        while(!(pointerCellChain == NULL)) {
+            countCellChain++;
+            pointerCellChain->amount += countCellChain % 2 == 0 ? amountChanges : ((-1)*(amountChanges));
+            pointerCellChain = pointerCellChain->next;
+        }
+
+        //update network
+        pointerCellChain = result->cellChain;
+        while (!(pointerCellChain == NULL)) {
+            
+            pointerCell = network.firstCell;
+            while (pointerCell->i < pointerCellChain->i) {
                 pointerCell = pointerCell->down;
             }
-            while (pointerCell->j < j) {
+            while (pointerCell->j < pointerCellChain->j) {
                 pointerCell = pointerCell->right;
             }
 
-            rebuildingNetwork(domain, network_, pointerCell->i, pointerCell->j);
-            if (pointerCell->amount == 0) {
-                result = NULL;
-                result = checkSteppingStone(domain);
-                resolveSteppingStoneCellChain(result);
-                pointerCellChain = result->cellChain;
-                countCellChain = 0;
-                score = 0;
-                while (!(pointerCellChain == NULL)) {
-                    countCellChain ++;
-                    score += countCellChain % 2 == 0 ? pointerCellChain->price : ((-1)*pointerCellChain->price);
-                    pointerCellChain = pointerCellChain->next;
-                }
-                if (score < minScore) {
-                    minScore = score;
-                    indexOfCellTarget_i = i;
-                    indexOfCellTarget_j = j;
-                }
-            }
-            pointerCell = network_.firstCell;
+            pointerCell->amount = pointerCellChain->amount;
+            pointerCellChain = pointerCellChain->next;
         }
-    }
+        network.z = zValue(network);
+        display_system(network, "Stepping Stone");
+    
+    } while (minScore < 0);
 
-    rebuildingNetwork(domain, network_, indexOfCellTarget_i, indexOfCellTarget_j);
-    result = NULL;
-    result = checkSteppingStone(domain);
-    resolveSteppingStoneCellChain(result);
-    pointerCellChain = result->cellChain;
-    int amountChanges = NULL; // nilai minimum dari variable keluar
-    countCellChain = 0;
-    while (!(pointerCellChain == NULL)) {
-        countCellChain++;
-        if (amountChanges) {
-            if (countCellChain % 2 != 0 && pointerCellChain->amount < amountChanges) {
-                amountChanges = pointerCellChain->amount;
-            }
-        } else {
-            if (countCellChain % 2 != 0) {
-                amountChanges = pointerCellChain->amount;
-            }
-        }
-        pointerCellChain = pointerCellChain->next;
-    }
-    pointerCellChain = result->cellChain;
-    countCellChain = 0;
-    while(!(pointerCellChain == NULL)) {
-        countCellChain++;
-        pointerCellChain->amount += countCellChain % 2 == 0 ? amountChanges : ((-1)*(amountChanges));
-        pointerCellChain = pointerCellChain->next;
-    }
-
-
-
-
-
-
-
-
-    return network_;
+    return network;
 }
 
 int function_test(test domain1, test domain2) {
@@ -683,5 +710,6 @@ int main() {
 
     cout << endl << endl;
     network = steppingStone(network);
+
     return 0;
 }
