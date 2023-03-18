@@ -243,7 +243,6 @@ cell *cellSteppingStone(cell *&target, cell *&current, int level, system_ *&netw
 
     for (string direction_ : directions) {
         if (direction_ != complementDirection) {
-            cout << direction_ << ";" << current->i << "," << current->j << endl;
             if (direction_ == "up") {
                 pointerCell = current->up;
                 while ((!(pointerCell == NULL)) && pointerCell->amount == 0) {
@@ -392,6 +391,47 @@ void rebuildingNetwork(steppingStoneCycle *&domain, system_ network, int indexTa
 
 }
 
+void resolveSteppingStoneCellChain(steppingStoneCycle *&result) {
+    int count = 0;
+    cell *pointerCell_ = result->cellChain;
+    while (!(pointerCell_ == NULL)) {
+        count ++;
+        pointerCell_ = pointerCell_->next;
+    }
+
+    // cell *pointerCell1;
+    // pointerCell = result->cellChain;
+    
+    // indexOfCell current;
+    // current.i = pointerCell->i;
+    // current.j = pointerCell->j;
+    // while (!(pointerCell->next == NULL)) {
+    //     pointerCell = pointerCell->next;
+    //     if (pointerCell->i == current.i || pointerCell->j == current.j) {
+    //         pointerCell1 = result->cellChain;
+    //         while (pointerCell1->i != )
+    //     }
+    // }
+
+    //finding inflection point
+    cell *pointerCell[3], *lastInflectionPoint = NULL;
+    pointerCell[0] = result->cellChain;
+    pointerCell[1] = pointerCell[0]->next;
+    pointerCell[2] = pointerCell[1]->next;
+    while (!(pointerCell[2] == NULL)) {
+        if (pointerCell[0]->i != pointerCell[2]->i && pointerCell[0]->j != pointerCell[2]->j) {
+            if (!(lastInflectionPoint == NULL)) {
+                lastInflectionPoint->next = pointerCell[1];
+            }
+
+            lastInflectionPoint = pointerCell[1];
+        }
+        pointerCell[0] = pointerCell[0]->next;
+        pointerCell[1] = pointerCell[0]->next;
+        pointerCell[2] = pointerCell[1]->next;
+    }
+}
+
 steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direction = "") {
     cell *pointerCell, *pointerCellChain, *pointerCellChain1;
     steppingStoneCycle *dummy = new steppingStoneCycle;
@@ -424,7 +464,7 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
 
     for (string direction_ : directions) {
         if (direction_ != complementDirection) {
-            cout << direction_ << ";" << current->i << "," << current->j << endl;
+            // cout << direction_ << ";" << current->i << "," << current->j << endl;
             if (direction_ == "up") {
                 pointerCell = current->up;
                 while ((!(pointerCell == NULL)) && pointerCell->amount == 0) {
@@ -452,6 +492,7 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
 
                     result = checkSteppingStone(domain, "up");
                     if (result->valid) {
+                        // resolveSteppingStoneCellChain(result);
                         return result;
                     } else {
                         pointerCellChain->next = NULL;
@@ -484,6 +525,7 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
 
                     result = checkSteppingStone(domain, "right");
                     if (result->valid) {
+                        // resolveSteppingStoneCellChain(result);
                         return result;
                     } else {
                         pointerCellChain->next = NULL;
@@ -516,6 +558,7 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
 
                     result = checkSteppingStone(domain, "down");
                     if (result->valid) {
+                        // resolveSteppingStoneCellChain(result);
                         return result;
                     } else {
                         pointerCellChain->next = NULL;
@@ -548,6 +591,7 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
 
                     result = checkSteppingStone(domain, "left");
                     if (result->valid) {
+                        // resolveSteppingStoneCellChain(result);
                         return result;
                     } else {
                         pointerCellChain->next = NULL;
@@ -594,15 +638,13 @@ system_ steppingStone (system_ network_) {
             if (pointerCell->amount == 0) {
                 result = NULL;
                 result = checkSteppingStone(domain);
+                resolveSteppingStoneCellChain(result);
                 pointerCellChain = result->cellChain;
                 countCellChain = 0;
                 score = 0;
-                cout << "===================" << endl;
                 while (!(pointerCellChain == NULL)) {
                     countCellChain ++;
-                    // score += (((-1)^countCellChain) * pointerCellChain->price);
                     score += countCellChain % 2 == 0 ? pointerCellChain->price : ((-1)*pointerCellChain->price);
-                    cout << pointerCellChain->i << "," << pointerCellChain->j << ";" << pointerCellChain->price << ";" << (((-1)^countCellChain) * pointerCellChain->price) << ";" << score << ";" << countCellChain <<endl;
                     pointerCellChain = pointerCellChain->next;
                 }
                 if (score < minScore) {
@@ -611,9 +653,24 @@ system_ steppingStone (system_ network_) {
                     indexOfCellTarget_j = j;
                 }
             }
+            pointerCell = network_.firstCell;
         }
     }
-    cout << indexOfCellTarget_i << "," << indexOfCellTarget_j << ";" << minScore;
+
+    rebuildingNetwork(domain, network_, indexOfCellTarget_i, indexOfCellTarget_j);
+    result = NULL;
+    result = checkSteppingStone(domain);
+    resolveSteppingStoneCellChain(result);
+    pointerCellChain = result->cellChain;
+    countCellChain = 0;
+    score = 0;
+    while (!(pointerCellChain == NULL)) {
+        countCellChain ++;
+        score += countCellChain % 2 == 0 ? pointerCellChain->price : ((-1)*pointerCellChain->price);
+        cout << pointerCellChain->i << "," << pointerCellChain->j << ";" << pointerCellChain->price << ";" << (countCellChain % 2 == 0 ? pointerCellChain->price : ((-1)*pointerCellChain->price)) << ";" << score << ";" << countCellChain  << (countCellChain % 2) <<endl;
+        pointerCellChain = pointerCellChain->next;
+    }
+
 
     return network_;
 
