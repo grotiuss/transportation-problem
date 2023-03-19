@@ -517,6 +517,7 @@ system_ steppingStone (system_ network) {
         pointerStorage = network.firstStorage;
         nFactories = 0;
         nStorages = 0;
+        minScore = 0;
         while (!(pointerFactory == NULL)) {
             nFactories ++;
             pointerFactory = pointerFactory->next;
