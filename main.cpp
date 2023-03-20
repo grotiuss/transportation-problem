@@ -704,83 +704,128 @@ int main() {
     cell destination[100][100];
     factoryStorage factory[100], storage[100];
     factoryStorage* currentFactory, currentStorage;
-    int numberOfFactories, numberOfStorages, totalDemand = 0, totalSupply = 0;
+    int numberOfFactories = 0, numberOfStorages = 0, totalDemand = 0, totalSupply = 0;
+    
+    bool resume = true;
+    while (resume) {
 
-    cout << "Number of Factories: "; cin >> numberOfFactories;
-    cout << "Number of Storages: " ; cin >> numberOfStorages;
+        cout << "Number of Factories: "; cin >> numberOfFactories;
+        cout << "Number of Storages: " ; cin >> numberOfStorages;
 
-    //input amount of supply for each factory
-    for (int i = 0; i < numberOfFactories; i++) {
-        cout << "Factory - " << i << ": " ; cin >> factory[i].amount;
-        factory[i].currentAmount = factory[i].amount;
-        factory[i].valid = true;
-        factory[i].index = i;
-        totalSupply += factory[i].amount;
-        if ((i-1 >= 0) && factory[i-1].valid) {
-            factory[i-1].next = &factory[i];
-        }
-        if (i == 0) {
-            network.firstFactory = &factory[i];
-        }
-    }
-    //input amount of demand for each storage
-    for (int i = 0; i < numberOfStorages; i++) {
-        cout << "Storage - " << i << ": " ; cin >> storage[i].amount;
-        storage[i].currentAmount = storage[i].amount;
-        storage[i].valid = true;
-        storage[i].index = i;
-        totalDemand += storage[i].amount;
-        if ((i-1 >= 0) && storage[i-1].valid) {
-            storage[i-1].next = &storage[i];
-        }
-        if (i == 0) {
-            network.firstStorage = &storage[i];
-        }
-    }
-    //totalDemand and totalSupply must be equal (balance)
-    if (totalDemand != totalSupply) {
-        cout << "total demand and total supply must be equal or balance";
-        return 0;
-    }
-    //input price for each cell
-    for (int i = 0; i < numberOfFactories; i++) {
-        for (int j = 0; j < numberOfStorages; j++) {
-            destination[i][j].i = i;
-            destination[i][j].j = j;
-            destination[i][j].valid = true;
-            cout << "Factory " << i << " - Storage " << j << ": "; cin >> destination[i][j].price;
-            if (i==0 && j==0) {
-                network.firstCell = &destination[i][j];
+        //input amount of supply for each factory
+        for (int i = 0; i < numberOfFactories; i++) {
+            cout << "Factory - " << i << ": " ; cin >> factory[i].amount;
+            factory[i].currentAmount = factory[i].amount;
+            factory[i].valid = true;
+            factory[i].index = i;
+            totalSupply += factory[i].amount;
+            if ((i-1 >= 0) && factory[i-1].valid) {
+                factory[i-1].next = &factory[i];
+            }
+            if (i == 0) {
+                network.firstFactory = &factory[i];
             }
         }
-    }
-    //Connecting all cells
-    for (int i = 0; i < numberOfFactories; i++) {
-        for (int j = 0; j < numberOfStorages; j++) {
-            // up
-            if ((i-1 >= 0) && destination[i-1][j].valid) {
-                destination[i][j].up = &destination[i-1][j];
+        //input amount of demand for each storage
+        for (int i = 0; i < numberOfStorages; i++) {
+            cout << "Storage - " << i << ": " ; cin >> storage[i].amount;
+            storage[i].currentAmount = storage[i].amount;
+            storage[i].valid = true;
+            storage[i].index = i;
+            totalDemand += storage[i].amount;
+            if ((i-1 >= 0) && storage[i-1].valid) {
+                storage[i-1].next = &storage[i];
             }
-            // down
-            if ((i+1 < numberOfFactories) && destination[i+1][j].valid) {
-                destination[i][j].down = &destination[i+1][j];
-            }
-            //left
-            if ((j-1 >= 0) && destination[i][j-1].valid) {
-                destination[i][j].left = &destination[i][j-1];
-            }
-            //right
-            if ((j+1 < numberOfStorages) && destination[i][j+1].valid) {
-                destination[i][j].right = &destination[i][j+1];
+            if (i == 0) {
+                network.firstStorage = &storage[i];
             }
         }
+        //totalDemand and totalSupply must be equal (balance)
+        if (totalDemand != totalSupply) {
+            cout << "total demand and total supply must be equal or balance";
+            return 0;
+        }
+        //input price for each cell
+        for (int i = 0; i < numberOfFactories; i++) {
+            for (int j = 0; j < numberOfStorages; j++) {
+                destination[i][j].i = i;
+                destination[i][j].j = j;
+                destination[i][j].valid = true;
+                cout << "Factory " << i << " - Storage " << j << ": "; cin >> destination[i][j].price;
+                if (i==0 && j==0) {
+                    network.firstCell = &destination[i][j];
+                }
+            }
+        }
+        //Connecting all cells
+        for (int i = 0; i < numberOfFactories; i++) {
+            for (int j = 0; j < numberOfStorages; j++) {
+                // up
+                if ((i-1 >= 0) && destination[i-1][j].valid) {
+                    destination[i][j].up = &destination[i-1][j];
+                }
+                // down
+                if ((i+1 < numberOfFactories) && destination[i+1][j].valid) {
+                    destination[i][j].down = &destination[i+1][j];
+                }
+                //left
+                if ((j-1 >= 0) && destination[i][j-1].valid) {
+                    destination[i][j].left = &destination[i][j-1];
+                }
+                //right
+                if ((j+1 < numberOfStorages) && destination[i][j+1].valid) {
+                    destination[i][j].right = &destination[i][j+1];
+                }
+            }
+        }
+
+        network = northWestCorner(network);
+        cout << endl << endl;
+
+        display_system(network, "North-West Corner");
+        network = steppingStone(network);
+
+        system("pause");
+
+        //reset
+        for (int i = 0; i < numberOfFactories; i++) {
+            for (int j = 0; j < numberOfStorages; j++) {
+                destination[i][j].valid = false;
+                destination[i][j].i = 0;
+                destination[i][j].j = 0;
+                destination[i][j].price = 0;
+                destination[i][j].amount = 0;
+                destination[i][j].up = NULL;
+                destination[i][j].down = NULL;
+                destination[i][j].left = NULL;
+                destination[i][j].right = NULL;
+                destination[i][j].next = NULL;
+            }
+        }
+        for (int i = 0; i < numberOfFactories; i++) {
+            factory[i].valid = false;
+            factory[i].amount = NULL;
+            factory[i].currentAmount = NULL;
+            factory[i].index = NULL;
+            factory[i].next = NULL;
+        }
+        numberOfFactories = 0;
+        totalSupply = 0;
+        for (int i = 0; i < numberOfStorages; i++) {
+            storage[i].valid = false;
+            storage[i].amount = NULL;
+            storage[i].currentAmount = NULL;
+            storage[i].index = NULL;
+            storage[i].next = NULL;
+        }
+        totalDemand = 0;
+        numberOfStorages = 0;
+        network.firstCell = NULL;
+        network.firstFactory = NULL;
+        network.firstStorage = NULL;
+        network.z = NULL;
     }
 
-    network = northWestCorner(network);
-    cout << endl << endl;
-
-    display_system(network, "North-West Corner");
-    network = steppingStone(network);
 
     return 0;
 }
