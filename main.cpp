@@ -43,7 +43,6 @@ struct steppingStoneCycle {
     cell *cellChain = NULL;
     int level = 0;
     int score;
-    // system_ *network;
     bool valid = false;
 };
 
@@ -290,41 +289,69 @@ void rebuildingNetwork(steppingStoneCycle *&domain, system_ network, int indexTa
     domain = new steppingStoneCycle;
     domain->target = destination[indexTarget_i][indexTarget_j];
     domain->current = destination[indexTarget_i][indexTarget_j];
-    // domain->network = network_;
     domain->valid = true;
 
 }
 
-void resolveSteppingStoneCellChain(steppingStoneCycle *&result) {
+void resolveSteppingStoneCellChain (steppingStoneCycle *&result) {
     int count = 0;
-    cell *pointerCell_ = result->cellChain;
-    while (!(pointerCell_ == NULL)) {
+    cell *pHelper = result->cellChain;
+    cout << "Before :" << endl;
+    while (!(pHelper == NULL)) {
         count ++;
-        pointerCell_ = pointerCell_->next;
+        cout << pHelper->i << "," << pHelper->j << ";" << pHelper->price << endl;
+        pHelper = pHelper->next;
     }
 
-    //finding inflection point
-    cell *pointerCell[3], *lastInflectionPoint = NULL;
-    pointerCell[0] = result->cellChain;
+
+    cell *firstCell = result->cellChain, *lastCell = result->cellChain;
+    while (lastCell->next != NULL) lastCell = lastCell->next;
+    lastCell->next = firstCell; //pretend to be close cycle;
+
+    int indexOfInflectionPoint = 0;
+    cell *pointerCell[3], *inflectionPoint[count];
+    pointerCell[0] = firstCell;
     pointerCell[1] = pointerCell[0]->next;
     pointerCell[2] = pointerCell[1]->next;
-    while (!(pointerCell[2] == NULL)) {
+    while (!(pointerCell[0] == lastCell)) {
         if (pointerCell[0]->i != pointerCell[2]->i && pointerCell[0]->j != pointerCell[2]->j) {
-            if (!(lastInflectionPoint == NULL)) {
-                lastInflectionPoint->next = pointerCell[1];
-            }
-
-            lastInflectionPoint = pointerCell[1];
+            inflectionPoint[indexOfInflectionPoint++] = pointerCell[1];
         }
         pointerCell[0] = pointerCell[0]->next;
         pointerCell[1] = pointerCell[0]->next;
         pointerCell[2] = pointerCell[1]->next;
     }
-}
+    if (pointerCell[0]->i != pointerCell[2]->i && pointerCell[0]->j != pointerCell[2]->j) {
+        inflectionPoint[indexOfInflectionPoint] = pointerCell[1];
+    } else {
+        indexOfInflectionPoint --;
+    }
+    lastCell->next = NULL;
 
-void updateNetwork(steppingStoneCycle *&source) {
-    int numberOfFactories = 0, numberOfStorages = 0;
+    pHelper = result->cellChain;
+    cell *reset;
+    while (!(pHelper == NULL)) {
+        reset = pHelper;
+        pHelper = pHelper->next;
+        reset->next = NULL;
+    }
 
+    for (int i = 0; i <= indexOfInflectionPoint; i++) {
+        if ((i + 1) <= indexOfInflectionPoint) {
+            inflectionPoint[i]->next = inflectionPoint[i + 1];
+        }
+    }
+
+    inflectionPoint[indexOfInflectionPoint]->next = inflectionPoint[0]; //pretend to be close cycle;
+
+    pHelper = inflectionPoint[0];
+    while (!(pHelper->i == result->target->i && pHelper->j == result->target->j)) {
+        pHelper = pHelper->next;
+    }
+    lastCell = pHelper;
+    firstCell = lastCell->next;
+    lastCell->next = NULL;
+    result->cellChain = firstCell;
 }
 
 steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direction = "") {
@@ -359,7 +386,7 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
 
     for (string direction_ : directions) {
         if (direction_ != complementDirection) {
-            // cout << direction_ << ";" << current->i << "," << current->j << endl;
+            
             if (direction_ == "up") {
                 pointerCell = current->up;
                 while ((!(pointerCell == NULL)) && pointerCell->amount == 0) {
@@ -387,10 +414,13 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
 
                     result = checkSteppingStone(domain, "up");
                     if (result->valid) {
-                        // resolveSteppingStoneCellChain(result);
                         return result;
                     } else {
-                        pointerCellChain->next = NULL;
+                        if (domain->cellChain == pointerCell) {
+                            domain->cellChain = NULL;
+                        } else if (!(pointerCellChain == NULL)) {
+                            pointerCellChain->next = NULL;
+                        }
                     }
                 }
             } else if (direction_ == "right") {
@@ -419,11 +449,15 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
                     }
 
                     result = checkSteppingStone(domain, "right");
+
                     if (result->valid) {
-                        // resolveSteppingStoneCellChain(result);
                         return result;
                     } else {
-                        pointerCellChain->next = NULL;
+                        if (domain->cellChain == pointerCell) {
+                            domain->cellChain = NULL;
+                        } else if (!(pointerCellChain == NULL)) {
+                            pointerCellChain->next = NULL;
+                        }
                     }
                 }
             } else if (direction_ == "down") {
@@ -453,10 +487,13 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
 
                     result = checkSteppingStone(domain, "down");
                     if (result->valid) {
-                        // resolveSteppingStoneCellChain(result);
                         return result;
                     } else {
-                        pointerCellChain->next = NULL;
+                        if (domain->cellChain == pointerCell) {
+                            domain->cellChain = NULL;
+                        } else if (!(pointerCellChain == NULL)) {
+                            pointerCellChain->next = NULL;
+                        }
                     }
                 }
             } else if (direction_ == "left") {
@@ -486,10 +523,13 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
 
                     result = checkSteppingStone(domain, "left");
                     if (result->valid) {
-                        // resolveSteppingStoneCellChain(result);
                         return result;
                     } else {
-                        pointerCellChain->next = NULL;
+                        if (domain->cellChain == pointerCell) {
+                            domain->cellChain = NULL;
+                        } else if (!(pointerCellChain == NULL)) {
+                            pointerCellChain->next = NULL;
+                        }
                     }
                 }
             }
@@ -539,6 +579,7 @@ system_ steppingStone (system_ network) {
                 rebuildingNetwork(domain, network, pointerCell->i, pointerCell->j);
                 if (pointerCell->amount == 0) {
                     result = NULL;
+                    cout << pointerCell->i << "," << pointerCell->j << endl;
                     result = checkSteppingStone(domain);
                     resolveSteppingStoneCellChain(result);
                     pointerCellChain = result->cellChain;
@@ -549,6 +590,7 @@ system_ steppingStone (system_ network) {
                         score += countCellChain % 2 == 0 ? pointerCellChain->price : ((-1)*pointerCellChain->price);
                         pointerCellChain = pointerCellChain->next;
                     }
+                    cout << "score: " << score << endl;
                     if (score < minScore) {
                         minScore = score;
                         indexOfCellTarget_i = i;
@@ -559,7 +601,7 @@ system_ steppingStone (system_ network) {
             }
         }
 
-        cout << "minScore: " << minScore << endl;
+        // cout << "minScore: " << minScore << endl;
 
         rebuildingNetwork(domain, network, indexOfCellTarget_i, indexOfCellTarget_j);
         result = NULL;
