@@ -673,7 +673,7 @@ int main() {
 
         //input amount of supply for each factory
         for (int i = 0; i < numberOfFactories; i++) {
-            cout << "Factory - " << i << ": " ; cin >> factory[i].amount;
+            cout << "Factory - " << (i+1) << ": " ; cin >> factory[i].amount;
             factory[i].currentAmount = factory[i].amount;
             factory[i].valid = true;
             factory[i].index = i;
@@ -687,7 +687,7 @@ int main() {
         }
         //input amount of demand for each storage
         for (int i = 0; i < numberOfStorages; i++) {
-            cout << "Storage - " << i << ": " ; cin >> storage[i].amount;
+            cout << "Storage - " << (i+1) << ": " ; cin >> storage[i].amount;
             storage[i].currentAmount = storage[i].amount;
             storage[i].valid = true;
             storage[i].index = i;
@@ -709,7 +709,7 @@ int main() {
                     destination[i][j].i = i;
                     destination[i][j].j = j;
                     destination[i][j].valid = true;
-                    cout << "Factory " << i << " - Storage " << j << ": "; cin >> destination[i][j].price;
+                    cout << "Factory " << (i+1) << " - Storage " << (j+1) << ": "; cin >> destination[i][j].price;
                     if (i==0 && j==0) {
                         network.firstCell = &destination[i][j];
                     }
@@ -783,6 +783,8 @@ int main() {
         network.firstFactory = NULL;
         network.firstStorage = NULL;
         network.z = NULL;
+
+        system("CLS");
     }
 
 
