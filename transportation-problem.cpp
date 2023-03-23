@@ -294,7 +294,7 @@ void rebuildingNetwork(steppingStoneCycle *&domain, transportationProblem networ
 
 }
 
-void resolveSteppingStoneCellChain (steppingStoneCycle *&result) {
+void rearrangeSteppingStoneShipmentCycle (steppingStoneCycle *&result) {
     int count = 0;
     shipment *pHelper;
     pHelper = result->cycle;
@@ -579,7 +579,7 @@ transportationProblem steppingStone (transportationProblem network) {
                 if (pointerShipment->x == 0) {
                     result = NULL;
                     result = checkSteppingStone(domain);
-                    resolveSteppingStoneCellChain(result);
+                    rearrangeSteppingStoneShipmentCycle(result);
                     pointerShipmentCycle = result->cycle;
                     countCellChain = 0;
                     score = 0;
@@ -602,7 +602,7 @@ transportationProblem steppingStone (transportationProblem network) {
             rebuildingNetwork(domain, network, indexOfCellTarget_i, indexOfCellTarget_j);
             result = NULL;
             result = checkSteppingStone(domain);
-            resolveSteppingStoneCellChain(result);
+            rearrangeSteppingStoneShipmentCycle(result);
 
             pointerShipmentCycle = result->cycle;
             amountChanges = NULL; // nilai minimum dari variable keluar
