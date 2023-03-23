@@ -8,8 +8,8 @@ struct shipment {
     bool valid = false;
     int i = 0;
     int j = 0;
-    int price = 0;
-    int amountOfResources = 0;
+    int c = 0;
+    int x = 0;
     shipment* up = NULL;
     shipment* down = NULL;
     shipment* left = NULL;
@@ -19,8 +19,8 @@ struct shipment {
 
 struct supplierDestination {
     bool valid = false;
-    int amountOfResources;
-    int currentAmountOfResources;
+    int a;
+    int current_a;
     int index;
     supplierDestination* next = NULL;
 };
@@ -99,15 +99,15 @@ void display_system (transportationProblem network, string title = "Table", int 
 
         pointerShipment = pointerFirstShipmentOfRow;
         do {
-            cout << setfill(' ') << left << setw(width) << "| " + to_string(pointerShipment->price);
+            cout << setfill(' ') << left << setw(width) << "| " + to_string(pointerShipment->c);
             pointerShipment = pointerShipment->right;
         } while (pointerShipment!= NULL);
 
-        cout << setfill(' ') << left << setw(width) << "|| " + to_string(currentSupplier->amountOfResources);
+        cout << setfill(' ') << left << setw(width) << "|| " + to_string(currentSupplier->a);
         cout << endl;
         pointerShipment = pointerFirstShipmentOfRow;
         do {
-            cout << setfill(' ') << left << setw(width) << "| " + to_string(pointerShipment->amountOfResources);
+            cout << setfill(' ') << left << setw(width) << "| " + to_string(pointerShipment->x);
             pointerShipment = pointerShipment->right;
         } while (pointerShipment!= NULL);
         cout << setfill(' ') << left << setw(width) << "|| ";
@@ -124,7 +124,7 @@ void display_system (transportationProblem network, string title = "Table", int 
     } while (currentSupplier != NULL);
 
     do {
-        cout << setfill(' ') << left << setw(width) << "  " + to_string(currentDestination->amountOfResources);
+        cout << setfill(' ') << left << setw(width) << "  " + to_string(currentDestination->a);
         currentDestination = currentDestination->next;
     } while (currentDestination != NULL);
     cout << setfill(' ') << left << setw(width) << "   Z = " + to_string(network.z);
@@ -138,7 +138,7 @@ int zValue (transportationProblem network) {
     do {
         pointerShipment = pointerFirstShipmentOfRow;
         do {
-            z += (pointerShipment->amountOfResources * pointerShipment->price);
+            z += (pointerShipment->x * pointerShipment->c);
             pointerShipment = pointerShipment->right;
         } while (pointerShipment != NULL);
         pointerFirstShipmentOfRow = pointerFirstShipmentOfRow->down;
@@ -175,20 +175,20 @@ transportationProblem northWestCorner (transportationProblem network) {
             cout << "Internal error";
         }
 
-        if (currentSupplier->currentAmountOfResources < currentDestination->currentAmountOfResources) {
-            pointerShipment->amountOfResources = currentSupplier->currentAmountOfResources;
-            currentDestination->currentAmountOfResources -= currentSupplier->currentAmountOfResources;
-            currentSupplier->currentAmountOfResources = 0;
+        if (currentSupplier->current_a < currentDestination->current_a) {
+            pointerShipment->x = currentSupplier->current_a;
+            currentDestination->current_a -= currentSupplier->current_a;
+            currentSupplier->current_a = 0;
             currentSupplier = currentSupplier->next;
-        } else if (currentSupplier->currentAmountOfResources > currentDestination->currentAmountOfResources) {
-            pointerShipment->amountOfResources = currentDestination->currentAmountOfResources;
-            currentSupplier->currentAmountOfResources -= currentDestination->currentAmountOfResources;
-            currentDestination->currentAmountOfResources = 0;
+        } else if (currentSupplier->current_a > currentDestination->current_a) {
+            pointerShipment->x = currentDestination->current_a;
+            currentSupplier->current_a -= currentDestination->current_a;
+            currentDestination->current_a = 0;
             currentDestination = currentDestination->next;
         } else {
-            pointerShipment->amountOfResources = currentSupplier->currentAmountOfResources;
-            currentSupplier->currentAmountOfResources = 0;
-            currentDestination->currentAmountOfResources = 0;
+            pointerShipment->x = currentSupplier->current_a;
+            currentSupplier->current_a = 0;
+            currentDestination->current_a = 0;
             currentSupplier = currentSupplier->next;
             currentDestination = currentDestination->next;
         }
@@ -232,8 +232,8 @@ void rebuildingNetwork(steppingStoneCycle *&domain, transportationProblem networ
             shipmentData[i][j]->valid = true;
             shipmentData[i][j]->i = pointerShipment->i;
             shipmentData[i][j]->j = pointerShipment->j;
-            shipmentData[i][j]->price = pointerShipment->price;
-            shipmentData[i][j]->amountOfResources = pointerShipment->amountOfResources;
+            shipmentData[i][j]->c = pointerShipment->c;
+            shipmentData[i][j]->x = pointerShipment->x;
             pointerShipment = network.firstShipment;
         }
     }
@@ -243,8 +243,8 @@ void rebuildingNetwork(steppingStoneCycle *&domain, transportationProblem networ
             pointerSupplier = pointerSupplier->next;
         }
         supplier[i]->valid = true;
-        supplier[i]->amountOfResources = pointerSupplier->amountOfResources;
-        supplier[i]->currentAmountOfResources = pointerSupplier->currentAmountOfResources;
+        supplier[i]->a = pointerSupplier->a;
+        supplier[i]->current_a = pointerSupplier->current_a;
         supplier[i]->index = pointerSupplier->index;
         pointerSupplier = network.firstSupplier;
     }
@@ -254,8 +254,8 @@ void rebuildingNetwork(steppingStoneCycle *&domain, transportationProblem networ
             pointerDestination = pointerDestination->next;
         }
         destination[i]->valid = true;
-        destination[i]->amountOfResources = pointerDestination->amountOfResources;
-        destination[i]->currentAmountOfResources = pointerDestination->currentAmountOfResources;
+        destination[i]->a = pointerDestination->a;
+        destination[i]->current_a = pointerDestination->current_a;
         destination[i]->index = pointerDestination->index;
         pointerDestination = network.firstDestination;
     }
@@ -389,7 +389,7 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
             
             if (direction_ == "up") {
                 pointerShipment = current->up;
-                while ((!(pointerShipment == NULL)) && pointerShipment->amountOfResources == 0) {
+                while ((!(pointerShipment == NULL)) && pointerShipment->x == 0) {
                     if ((!(pointerShipment == NULL)) && (pointerShipment->i == target->i && pointerShipment->j == target->j)) {
                         if (!(domain->cycle == NULL)) {
                             pointerShipmentCycle->next = pointerShipment;
@@ -402,7 +402,7 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
                     }
                     pointerShipment = pointerShipment->up;
                 }
-                if (!(pointerShipment == NULL) && pointerShipment->amountOfResources > 0) {
+                if (!(pointerShipment == NULL) && pointerShipment->x > 0) {
                     domain->current = pointerShipment;
                     domain->level = level + 1;
 
@@ -425,7 +425,7 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
                 }
             } else if (direction_ == "right") {
                 pointerShipment = current->right;
-                while ((!(pointerShipment == NULL)) && pointerShipment->amountOfResources == 0) {
+                while ((!(pointerShipment == NULL)) && pointerShipment->x == 0) {
                     if ((!(pointerShipment == NULL)) && (pointerShipment->i == target->i && pointerShipment->j == target->j)) {
                         if (!(domain->cycle == NULL)) {
                             pointerShipmentCycle->next = pointerShipment;
@@ -438,7 +438,7 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
                     }
                     pointerShipment = pointerShipment->right;
                 }
-                if (!(pointerShipment == NULL) && pointerShipment->amountOfResources > 0) {
+                if (!(pointerShipment == NULL) && pointerShipment->x > 0) {
                     domain->current = pointerShipment;
                     domain->level = level + 1;
 
@@ -462,7 +462,7 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
                 }
             } else if (direction_ == "down") {
                 pointerShipment = current->down;
-                while ((!(pointerShipment == NULL)) && pointerShipment->amountOfResources == 0) {
+                while ((!(pointerShipment == NULL)) && pointerShipment->x == 0) {
                     if ((!(pointerShipment == NULL)) && (pointerShipment->i == target->i && pointerShipment->j == target->j)) {
                         if (!(domain->cycle == NULL)) {
                             pointerShipmentCycle->next = pointerShipment;
@@ -475,7 +475,7 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
                     }
                     pointerShipment = pointerShipment->down;
                 }
-                if (!(pointerShipment == NULL) && pointerShipment->amountOfResources > 0) {
+                if (!(pointerShipment == NULL) && pointerShipment->x > 0) {
                     domain->current = pointerShipment;
                     domain->level = level + 1;
 
@@ -498,7 +498,7 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
                 }
             } else if (direction_ == "left") {
                 pointerShipment = current->left;
-                while ((!(pointerShipment == NULL)) && pointerShipment->amountOfResources == 0) {
+                while ((!(pointerShipment == NULL)) && pointerShipment->x == 0) {
                     if ((!(pointerShipment == NULL)) && (pointerShipment->i == target->i && pointerShipment->j == target->j)) {
                         if (!(domain->cycle == NULL)) {
                             pointerShipmentCycle->next = pointerShipment;
@@ -511,7 +511,7 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
                     }
                     pointerShipment = pointerShipment->left;
                 }
-                if (!(pointerShipment == NULL) && pointerShipment->amountOfResources > 0) {
+                if (!(pointerShipment == NULL) && pointerShipment->x > 0) {
                     domain->current = pointerShipment;
                     domain->level = level + 1;
 
@@ -576,7 +576,7 @@ transportationProblem steppingStone (transportationProblem network) {
                 }
 
                 rebuildingNetwork(domain, network, pointerShipment->i, pointerShipment->j);
-                if (pointerShipment->amountOfResources == 0) {
+                if (pointerShipment->x == 0) {
                     result = NULL;
                     result = checkSteppingStone(domain);
                     resolveSteppingStoneCellChain(result);
@@ -585,7 +585,7 @@ transportationProblem steppingStone (transportationProblem network) {
                     score = 0;
                     while (!(pointerShipmentCycle == NULL)) {
                         countCellChain ++;
-                        score += countCellChain % 2 == 0 ? pointerShipmentCycle->price : ((-1)*pointerShipmentCycle->price);
+                        score += countCellChain % 2 == 0 ? pointerShipmentCycle->c : ((-1)*pointerShipmentCycle->c);
                         pointerShipmentCycle = pointerShipmentCycle->next;
                     }
                     if (score < minScore) {
@@ -610,12 +610,12 @@ transportationProblem steppingStone (transportationProblem network) {
             while (!(pointerShipmentCycle == NULL)) {
                 countCellChain++;
                 if (amountChanges) {
-                    if (countCellChain % 2 != 0 && pointerShipmentCycle->amountOfResources < amountChanges) {
-                        amountChanges = pointerShipmentCycle->amountOfResources;
+                    if (countCellChain % 2 != 0 && pointerShipmentCycle->x < amountChanges) {
+                        amountChanges = pointerShipmentCycle->x;
                     }
                 } else {
                     if (countCellChain % 2 != 0) {
-                        amountChanges = pointerShipmentCycle->amountOfResources;
+                        amountChanges = pointerShipmentCycle->x;
                     }
                 }
                 pointerShipmentCycle = pointerShipmentCycle->next;
@@ -624,7 +624,7 @@ transportationProblem steppingStone (transportationProblem network) {
             countCellChain = 0;
             while(!(pointerShipmentCycle == NULL)) {
                 countCellChain++;
-                pointerShipmentCycle->amountOfResources += countCellChain % 2 == 0 ? amountChanges : ((-1)*(amountChanges));
+                pointerShipmentCycle->x += countCellChain % 2 == 0 ? amountChanges : ((-1)*(amountChanges));
                 pointerShipmentCycle = pointerShipmentCycle->next;
             }
 
@@ -640,7 +640,7 @@ transportationProblem steppingStone (transportationProblem network) {
                     pointerShipment = pointerShipment->right;
                 }
 
-                pointerShipment->amountOfResources = pointerShipmentCycle->amountOfResources;
+                pointerShipment->x = pointerShipmentCycle->x;
                 pointerShipmentCycle = pointerShipmentCycle->next;
             }
             network.z = zValue(network);
@@ -669,13 +669,13 @@ int main() {
         cout << "Number of Suppliers: "; cin >> numberOfSupplier;
         cout << "Number of Destinations: " ; cin >> numberOfDestination;
 
-        //input amountOfResources of supply for each supplier
+        //input a of supply for each supplier
         for (int i = 0; i < numberOfSupplier; i++) {
-            cout << "Supplier - " << (i+1) << ": " ; cin >> supplier[i].amountOfResources;
-            supplier[i].currentAmountOfResources = supplier[i].amountOfResources;
+            cout << "Supplier - " << (i+1) << ": " ; cin >> supplier[i].a;
+            supplier[i].current_a = supplier[i].a;
             supplier[i].valid = true;
             supplier[i].index = i;
-            totalSupply += supplier[i].amountOfResources;
+            totalSupply += supplier[i].a;
             if ((i-1 >= 0) && supplier[i-1].valid) {
                 supplier[i-1].next = &supplier[i];
             }
@@ -683,13 +683,13 @@ int main() {
                 network.firstSupplier = &supplier[i];
             }
         }
-        //input amountOfResources of demand for each destination
+        //input a of demand for each destination
         for (int i = 0; i < numberOfDestination; i++) {
-            cout << "Destination - " << (i+1) << ": " ; cin >> destination[i].amountOfResources;
-            destination[i].currentAmountOfResources = destination[i].amountOfResources;
+            cout << "Destination - " << (i+1) << ": " ; cin >> destination[i].a;
+            destination[i].current_a = destination[i].a;
             destination[i].valid = true;
             destination[i].index = i;
-            totalDemand += destination[i].amountOfResources;
+            totalDemand += destination[i].a;
             if ((i-1 >= 0) && destination[i-1].valid) {
                 destination[i-1].next = &destination[i];
             }
@@ -701,13 +701,13 @@ int main() {
         if (totalDemand != totalSupply) {
             cout << "total demand and total supply must be equal or balance" << endl << endl;
         } else {
-            //input price for each shipment
+            //input c for each shipment
             for (int i = 0; i < numberOfSupplier; i++) {
                 for (int j = 0; j < numberOfDestination; j++) {
                     shipmentData[i][j].i = i;
                     shipmentData[i][j].j = j;
                     shipmentData[i][j].valid = true;
-                    cout << "Supplier " << (i+1) << " - Destination " << (j+1) << ": "; cin >> shipmentData[i][j].price;
+                    cout << "Supplier " << (i+1) << " - Destination " << (j+1) << ": "; cin >> shipmentData[i][j].c;
                     if (i==0 && j==0) {
                         network.firstShipment = &shipmentData[i][j];
                     }
@@ -750,8 +750,8 @@ int main() {
                 shipmentData[i][j].valid = false;
                 shipmentData[i][j].i = 0;
                 shipmentData[i][j].j = 0;
-                shipmentData[i][j].price = 0;
-                shipmentData[i][j].amountOfResources = 0;
+                shipmentData[i][j].c = 0;
+                shipmentData[i][j].x = 0;
                 shipmentData[i][j].up = NULL;
                 shipmentData[i][j].down = NULL;
                 shipmentData[i][j].left = NULL;
@@ -761,8 +761,8 @@ int main() {
         }
         for (int i = 0; i < numberOfSupplier; i++) {
             supplier[i].valid = false;
-            supplier[i].amountOfResources = NULL;
-            supplier[i].currentAmountOfResources = NULL;
+            supplier[i].a = NULL;
+            supplier[i].current_a = NULL;
             supplier[i].index = NULL;
             supplier[i].next = NULL;
         }
@@ -770,8 +770,8 @@ int main() {
         totalSupply = 0;
         for (int i = 0; i < numberOfDestination; i++) {
             destination[i].valid = false;
-            destination[i].amountOfResources = NULL;
-            destination[i].currentAmountOfResources = NULL;
+            destination[i].a = NULL;
+            destination[i].current_a = NULL;
             destination[i].index = NULL;
             destination[i].next = NULL;
         }
