@@ -664,8 +664,7 @@ int main() {
     supplierDestination supplier[100], destination[100];
     int numberOfSupplier = 0, numberOfDestination = 0, totalDemand = 0, totalSupply = 0;
     
-    bool resume = true;
-    while (resume) {
+    do {
 
         cout << "Number of Suppliers: "; cin >> numberOfSupplier;
         cout << "Number of Destinations: " ; cin >> numberOfDestination;
@@ -784,7 +783,7 @@ int main() {
         network.z = NULL;
 
         system("CLS");
-    }
+    } while (true);
 
 
     return 0;
