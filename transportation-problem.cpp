@@ -4,62 +4,62 @@
 
 using namespace std;
 
-struct cell {
+struct shipment {
     bool valid = false;
     int i = 0;
     int j = 0;
     int price = 0;
-    int amount = 0;
-    cell* up = NULL;
-    cell* down = NULL;
-    cell* left = NULL;
-    cell* right = NULL;
-    cell* next = NULL;
+    int amountOfResources = 0;
+    shipment* up = NULL;
+    shipment* down = NULL;
+    shipment* left = NULL;
+    shipment* right = NULL;
+    shipment* next = NULL;
 };
 
-struct factoryStorage {
+struct supplierDestination {
     bool valid = false;
-    int amount;
-    int currentAmount;
+    int amountOfResources;
+    int currentAmountOfResources;
     int index;
-    factoryStorage* next = NULL;
+    supplierDestination* next = NULL;
 };
 
-struct system_ {
-    cell* firstCell;
-    factoryStorage* firstFactory;
-    factoryStorage* firstStorage;
+struct transportationProblem {
+    shipment* firstShipment;
+    supplierDestination* firstSupplier;
+    supplierDestination* firstDestination;
     int z = NULL;
 };
 
 struct steppingStoneCycle {
-    cell *target;
-    cell *current;
-    cell *cellChain = NULL;
+    shipment *target;
+    shipment *current;
+    shipment *cycle = NULL;
     int level = 0;
     int score;
     bool valid = false;
 };
 
-void display_system (system_ network, string title = "Table", int iteration = 0) {
-    factoryStorage* currentFactory = network.firstFactory;
-    factoryStorage* currentStorage = network.firstStorage;
-    cell* pointerFirstCellOfRow;
-    cell* pointerCell;
+void display_system (transportationProblem network, string title = "Table", int iteration = 0) {
+    supplierDestination* currentSupplier = network.firstSupplier;
+    supplierDestination* currentDestination = network.firstDestination;
+    shipment* pointerFirstShipmentOfRow;
+    shipment* pointerShipment;
 
     int width = 15;
     int n_source = 0;
     int n_destination = 0;
     do {
         n_source ++;
-        currentFactory = currentFactory->next;
-    } while (currentFactory->next != NULL);
-    currentFactory = network.firstFactory;
+        currentSupplier = currentSupplier->next;
+    } while (currentSupplier->next != NULL);
+    currentSupplier = network.firstSupplier;
     do {
         n_destination ++;
-        currentStorage = currentStorage->next;
-    } while (currentStorage->next != NULL);
-    currentStorage = network.firstStorage;
+        currentDestination = currentDestination->next;
+    } while (currentDestination->next != NULL);
+    currentDestination = network.firstDestination;
 
     cout << title;
     if (iteration > 0) {
@@ -92,244 +92,244 @@ void display_system (system_ network, string title = "Table", int iteration = 0)
     cout << endl;
 
     do {
-        pointerFirstCellOfRow = network.firstCell;
-        while (pointerFirstCellOfRow->i < currentFactory->index) {
-            pointerFirstCellOfRow = pointerFirstCellOfRow->down;
+        pointerFirstShipmentOfRow = network.firstShipment;
+        while (pointerFirstShipmentOfRow->i < currentSupplier->index) {
+            pointerFirstShipmentOfRow = pointerFirstShipmentOfRow->down;
         }
 
-        pointerCell = pointerFirstCellOfRow;
+        pointerShipment = pointerFirstShipmentOfRow;
         do {
-            cout << setfill(' ') << left << setw(width) << "| " + to_string(pointerCell->price);
-            pointerCell = pointerCell->right;
-        } while (pointerCell!= NULL);
-        // cout << setfill(' ') << left << setw(width) << "|| ";
-        cout << setfill(' ') << left << setw(width) << "|| " + to_string(currentFactory->amount);
+            cout << setfill(' ') << left << setw(width) << "| " + to_string(pointerShipment->price);
+            pointerShipment = pointerShipment->right;
+        } while (pointerShipment!= NULL);
+
+        cout << setfill(' ') << left << setw(width) << "|| " + to_string(currentSupplier->amountOfResources);
         cout << endl;
-        pointerCell = pointerFirstCellOfRow;
+        pointerShipment = pointerFirstShipmentOfRow;
         do {
-            cout << setfill(' ') << left << setw(width) << "| " + to_string(pointerCell->amount);
-            pointerCell = pointerCell->right;
-        } while (pointerCell!= NULL);
+            cout << setfill(' ') << left << setw(width) << "| " + to_string(pointerShipment->amountOfResources);
+            pointerShipment = pointerShipment->right;
+        } while (pointerShipment!= NULL);
         cout << setfill(' ') << left << setw(width) << "|| ";
         cout << endl;
-        pointerCell = pointerFirstCellOfRow;
+        pointerShipment = pointerFirstShipmentOfRow;
         do {
             cout << setfill('-') << left << setw(width) << "";
-            pointerCell = pointerCell->right;
-        } while (pointerCell!= NULL);
+            pointerShipment = pointerShipment->right;
+        } while (pointerShipment!= NULL);
         cout << "--";
         cout << endl;
 
-        currentFactory = currentFactory->next;
-    } while (currentFactory != NULL);
+        currentSupplier = currentSupplier->next;
+    } while (currentSupplier != NULL);
 
     do {
-        cout << setfill(' ') << left << setw(width) << "  " + to_string(currentStorage->amount);
-        currentStorage = currentStorage->next;
-    } while (currentStorage != NULL);
+        cout << setfill(' ') << left << setw(width) << "  " + to_string(currentDestination->amountOfResources);
+        currentDestination = currentDestination->next;
+    } while (currentDestination != NULL);
     cout << setfill(' ') << left << setw(width) << "   Z = " + to_string(network.z);
 }
 
-int zValue (system_ network) {
-    cell* pointerFirstCellOfRow = network.firstCell;
-    cell* pointerCell;
+int zValue (transportationProblem network) {
+    shipment* pointerFirstShipmentOfRow = network.firstShipment;
+    shipment* pointerShipment;
     int z = 0;
 
     do {
-        pointerCell = pointerFirstCellOfRow;
+        pointerShipment = pointerFirstShipmentOfRow;
         do {
-            z += (pointerCell->amount * pointerCell->price);
-            pointerCell = pointerCell->right;
-        } while (pointerCell != NULL);
-        pointerFirstCellOfRow = pointerFirstCellOfRow->down;
-    } while (pointerFirstCellOfRow != NULL);
+            z += (pointerShipment->amountOfResources * pointerShipment->price);
+            pointerShipment = pointerShipment->right;
+        } while (pointerShipment != NULL);
+        pointerFirstShipmentOfRow = pointerFirstShipmentOfRow->down;
+    } while (pointerFirstShipmentOfRow != NULL);
 
     return z;
 }
 
-system_ northWestCorner (system_ network) {
-    factoryStorage* currentFactory = network.firstFactory;
-    factoryStorage* currentStorage = network.firstStorage;
-    cell* pointerFirstCellOfRow;
-    cell* pointerCell;
-    int indexCellRow, indexCellColumn;
+transportationProblem northWestCorner (transportationProblem network) {
+    supplierDestination* currentSupplier = network.firstSupplier;
+    supplierDestination* currentDestination = network.firstDestination;
+    shipment* pointerFirstShipmentOfRow;
+    shipment* pointerShipment;
+    int indexShipmentRow, indexShipmentColumn;
 
     do {
-        indexCellRow = currentFactory->index;
-        indexCellColumn = currentStorage->index;
+        indexShipmentRow = currentSupplier->index;
+        indexShipmentColumn = currentDestination->index;
 
-        pointerFirstCellOfRow = network.firstCell;
-        while (pointerFirstCellOfRow->i < indexCellRow && pointerFirstCellOfRow->down != NULL) {
-            pointerFirstCellOfRow = pointerFirstCellOfRow->down;
+        pointerFirstShipmentOfRow = network.firstShipment;
+        while (pointerFirstShipmentOfRow->i < indexShipmentRow && pointerFirstShipmentOfRow->down != NULL) {
+            pointerFirstShipmentOfRow = pointerFirstShipmentOfRow->down;
         }
-        if (pointerFirstCellOfRow->i != indexCellRow) {
+        if (pointerFirstShipmentOfRow->i != indexShipmentRow) {
             system("CLS");
             cout << "Internal error";
         }
-        pointerCell = pointerFirstCellOfRow;
-        while (pointerCell->j < indexCellColumn && pointerCell->right != NULL) {
-            pointerCell = pointerCell->right;
+        pointerShipment = pointerFirstShipmentOfRow;
+        while (pointerShipment->j < indexShipmentColumn && pointerShipment->right != NULL) {
+            pointerShipment = pointerShipment->right;
         }
-        if (pointerCell->j != indexCellColumn) {
+        if (pointerShipment->j != indexShipmentColumn) {
             system("CLS");
             cout << "Internal error";
         }
 
-        if (currentFactory->currentAmount < currentStorage->currentAmount) {
-            pointerCell->amount = currentFactory->currentAmount;
-            currentStorage->currentAmount -= currentFactory->currentAmount;
-            currentFactory->currentAmount = 0;
-            currentFactory = currentFactory->next;
-        } else if (currentFactory->currentAmount > currentStorage->currentAmount) {
-            pointerCell->amount = currentStorage->currentAmount;
-            currentFactory->currentAmount -= currentStorage->currentAmount;
-            currentStorage->currentAmount = 0;
-            currentStorage = currentStorage->next;
+        if (currentSupplier->currentAmountOfResources < currentDestination->currentAmountOfResources) {
+            pointerShipment->amountOfResources = currentSupplier->currentAmountOfResources;
+            currentDestination->currentAmountOfResources -= currentSupplier->currentAmountOfResources;
+            currentSupplier->currentAmountOfResources = 0;
+            currentSupplier = currentSupplier->next;
+        } else if (currentSupplier->currentAmountOfResources > currentDestination->currentAmountOfResources) {
+            pointerShipment->amountOfResources = currentDestination->currentAmountOfResources;
+            currentSupplier->currentAmountOfResources -= currentDestination->currentAmountOfResources;
+            currentDestination->currentAmountOfResources = 0;
+            currentDestination = currentDestination->next;
         } else {
-            pointerCell->amount = currentFactory->currentAmount;
-            currentFactory->currentAmount = 0;
-            currentStorage->currentAmount = 0;
-            currentFactory = currentFactory->next;
-            currentStorage = currentStorage->next;
+            pointerShipment->amountOfResources = currentSupplier->currentAmountOfResources;
+            currentSupplier->currentAmountOfResources = 0;
+            currentDestination->currentAmountOfResources = 0;
+            currentSupplier = currentSupplier->next;
+            currentDestination = currentDestination->next;
         }
-    } while (currentFactory != NULL && currentStorage != NULL);
+    } while (currentSupplier != NULL && currentDestination != NULL);
 
     network.z = zValue(network);
     return network;
 }
 
-void rebuildingNetwork(steppingStoneCycle *&domain, system_ network, int indexTarget_i, int indexTarget_j) {
-    factoryStorage *pointerFactory = network.firstFactory, *pointerStorage = network.firstStorage;
-    cell *pointerCell = network.firstCell;
-    int n_factories = 0, n_storages = 0;
+void rebuildingNetwork(steppingStoneCycle *&domain, transportationProblem network, int indexTarget_i, int indexTarget_j) {
+    supplierDestination *pointerSupplier = network.firstSupplier, *pointerDestination = network.firstDestination;
+    shipment *pointerShipment = network.firstShipment;
+    int nSupplier = 0, nDestination = 0;
 
     // counting factories and storages
-    while (!(pointerFactory == NULL)) {
-        n_factories ++;
-        pointerFactory = pointerFactory->next;
+    while (!(pointerSupplier == NULL)) {
+        nSupplier ++;
+        pointerSupplier = pointerSupplier->next;
     }
-    while (!(pointerStorage == NULL)) {
-        n_storages ++;
-        pointerStorage = pointerStorage->next;
+    while (!(pointerDestination == NULL)) {
+        nDestination ++;
+        pointerDestination = pointerDestination->next;
     }
 
-    pointerFactory = network.firstFactory;
-    pointerStorage = network.firstStorage;
+    pointerSupplier = network.firstSupplier;
+    pointerDestination = network.firstDestination;
 
 
     // re-building network
-    cell* destination[n_factories][n_storages];
-    factoryStorage *factory[n_factories], *storage[n_storages];
-    for (int i = 0; i < n_factories; i++) {
-        for (int j = 0; j < n_storages; j++) {
-            destination[i][j] = new cell;
-            while (pointerCell->i < i) {
-                pointerCell = pointerCell->down;
+    shipment* shipmentData[nSupplier][nDestination];
+    supplierDestination *supplier[nSupplier], *destination[nDestination];
+    for (int i = 0; i < nSupplier; i++) {
+        for (int j = 0; j < nDestination; j++) {
+            shipmentData[i][j] = new shipment;
+            while (pointerShipment->i < i) {
+                pointerShipment = pointerShipment->down;
             }
-            while (pointerCell->j < j) {
-                pointerCell = pointerCell->right;
+            while (pointerShipment->j < j) {
+                pointerShipment = pointerShipment->right;
             }
-            destination[i][j]->valid = true;
-            destination[i][j]->i = pointerCell->i;
-            destination[i][j]->j = pointerCell->j;
-            destination[i][j]->price = pointerCell->price;
-            destination[i][j]->amount = pointerCell->amount;
-            pointerCell = network.firstCell;
+            shipmentData[i][j]->valid = true;
+            shipmentData[i][j]->i = pointerShipment->i;
+            shipmentData[i][j]->j = pointerShipment->j;
+            shipmentData[i][j]->price = pointerShipment->price;
+            shipmentData[i][j]->amountOfResources = pointerShipment->amountOfResources;
+            pointerShipment = network.firstShipment;
         }
     }
-    for (int i = 0; i < n_factories; i++) {
-        factory[i] = new factoryStorage;
-        while (pointerFactory->index < i) {
-            pointerFactory = pointerFactory->next;
+    for (int i = 0; i < nSupplier; i++) {
+        supplier[i] = new supplierDestination;
+        while (pointerSupplier->index < i) {
+            pointerSupplier = pointerSupplier->next;
         }
-        factory[i]->valid = true;
-        factory[i]->amount = pointerFactory->amount;
-        factory[i]->currentAmount = pointerFactory->currentAmount;
-        factory[i]->index = pointerFactory->index;
-        pointerFactory = network.firstFactory;
+        supplier[i]->valid = true;
+        supplier[i]->amountOfResources = pointerSupplier->amountOfResources;
+        supplier[i]->currentAmountOfResources = pointerSupplier->currentAmountOfResources;
+        supplier[i]->index = pointerSupplier->index;
+        pointerSupplier = network.firstSupplier;
     }
-    for (int i = 0; i < n_storages; i++) {
-        storage[i] = new factoryStorage;
-        while (pointerStorage->index < i) {
-            pointerStorage = pointerStorage->next;
+    for (int i = 0; i < nDestination; i++) {
+        destination[i] = new supplierDestination;
+        while (pointerDestination->index < i) {
+            pointerDestination = pointerDestination->next;
         }
-        storage[i]->valid = true;
-        storage[i]->amount = pointerStorage->amount;
-        storage[i]->currentAmount = pointerStorage->currentAmount;
-        storage[i]->index = pointerStorage->index;
-        pointerStorage = network.firstStorage;
+        destination[i]->valid = true;
+        destination[i]->amountOfResources = pointerDestination->amountOfResources;
+        destination[i]->currentAmountOfResources = pointerDestination->currentAmountOfResources;
+        destination[i]->index = pointerDestination->index;
+        pointerDestination = network.firstDestination;
     }
 
     // connecting all cells, storages, and factories that had been created
-    cell *firstCell = destination[0][0];
-    factoryStorage *firstStorage = storage[0], *firstFactory = factory[0];
-    for (int i = 0; i < n_factories; i++) {
-        for (int j = 0; j < n_storages; j++) {
+    shipment *firstShipment = shipmentData[0][0];
+    supplierDestination *firstDestination = destination[0], *firstSupplier = supplier[0];
+    for (int i = 0; i < nSupplier; i++) {
+        for (int j = 0; j < nDestination; j++) {
             // left
-            destination[i][j]->left = (j-1) >= 0 ? destination[i][j-1] : NULL;
+            shipmentData[i][j]->left = (j-1) >= 0 ? shipmentData[i][j-1] : NULL;
             //right
-            destination[i][j]->right = (j+1) < n_storages ? destination[i][j+1] : NULL;
+            shipmentData[i][j]->right = (j+1) < nDestination ? shipmentData[i][j+1] : NULL;
             //up
-            destination[i][j]->up = (i-1) >= 0 ? destination[i-1][j] : NULL;
+            shipmentData[i][j]->up = (i-1) >= 0 ? shipmentData[i-1][j] : NULL;
             //down
-            destination[i][j]->down = (i+1) < n_factories ? destination[i+1][j] : NULL;
+            shipmentData[i][j]->down = (i+1) < nSupplier ? shipmentData[i+1][j] : NULL;
         }
     }
-    for (int i = 0; i < n_factories; i++) {
-        factory[i]->next = (i+1) < n_factories ? factory[i+1] : NULL;
+    for (int i = 0; i < nSupplier; i++) {
+        supplier[i]->next = (i+1) < nSupplier ? supplier[i+1] : NULL;
     }
-    for (int i = 0; i < n_storages; i++) {
-        storage[i]->next = (i+1) < n_storages ? storage[i+1] : NULL;
+    for (int i = 0; i < nDestination; i++) {
+        destination[i]->next = (i+1) < nDestination ? destination[i+1] : NULL;
     }
 
-    system_ *network_ = new system_;
-    network_->firstCell = firstCell;
-    network_->firstFactory = firstFactory;
-    network_->firstStorage = firstStorage;
+    transportationProblem *network_ = new transportationProblem;
+    network_->firstShipment = firstShipment;
+    network_->firstSupplier = firstSupplier;
+    network_->firstDestination = firstDestination;
 
     domain = new steppingStoneCycle;
-    domain->target = destination[indexTarget_i][indexTarget_j];
-    domain->current = destination[indexTarget_i][indexTarget_j];
+    domain->target = shipmentData[indexTarget_i][indexTarget_j];
+    domain->current = shipmentData[indexTarget_i][indexTarget_j];
     domain->valid = true;
 
 }
 
 void resolveSteppingStoneCellChain (steppingStoneCycle *&result) {
     int count = 0;
-    cell *pHelper;
-    pHelper = result->cellChain;
+    shipment *pHelper;
+    pHelper = result->cycle;
     while (!(pHelper == NULL)) {
         count ++;
         pHelper = pHelper->next;
     }
 
 
-    cell *firstCell = result->cellChain, *lastCell = result->cellChain;
-    while (lastCell->next != NULL) lastCell = lastCell->next;
-    lastCell->next = firstCell; //pretend to be close cycle;
+    shipment *firstShipment = result->cycle, *lastShipment = result->cycle;
+    while (lastShipment->next != NULL) lastShipment = lastShipment->next;
+    lastShipment->next = firstShipment; //pretend to be close cycle;
 
     int indexOfInflectionPoint = 0;
-    cell *pointerCell[3], *inflectionPoint[count];
-    pointerCell[0] = firstCell;
-    pointerCell[1] = pointerCell[0]->next;
-    pointerCell[2] = pointerCell[1]->next;
-    while (!(pointerCell[0] == lastCell)) {
-        if (pointerCell[0]->i != pointerCell[2]->i && pointerCell[0]->j != pointerCell[2]->j) {
-            inflectionPoint[indexOfInflectionPoint++] = pointerCell[1];
+    shipment *pointerShipment[3], *inflectionPoint[count];
+    pointerShipment[0] = firstShipment;
+    pointerShipment[1] = pointerShipment[0]->next;
+    pointerShipment[2] = pointerShipment[1]->next;
+    while (!(pointerShipment[0] == lastShipment)) {
+        if (pointerShipment[0]->i != pointerShipment[2]->i && pointerShipment[0]->j != pointerShipment[2]->j) {
+            inflectionPoint[indexOfInflectionPoint++] = pointerShipment[1];
         }
-        pointerCell[0] = pointerCell[0]->next;
-        pointerCell[1] = pointerCell[0]->next;
-        pointerCell[2] = pointerCell[1]->next;
+        pointerShipment[0] = pointerShipment[0]->next;
+        pointerShipment[1] = pointerShipment[0]->next;
+        pointerShipment[2] = pointerShipment[1]->next;
     }
-    if (pointerCell[0]->i != pointerCell[2]->i && pointerCell[0]->j != pointerCell[2]->j) {
-        inflectionPoint[indexOfInflectionPoint] = pointerCell[1];
+    if (pointerShipment[0]->i != pointerShipment[2]->i && pointerShipment[0]->j != pointerShipment[2]->j) {
+        inflectionPoint[indexOfInflectionPoint] = pointerShipment[1];
     } else {
         indexOfInflectionPoint --;
     }
-    lastCell->next = NULL;
+    lastShipment->next = NULL;
 
-    pHelper = result->cellChain;
-    cell *reset;
+    pHelper = result->cycle;
+    shipment *reset;
     while (!(pHelper == NULL)) {
         reset = pHelper;
         pHelper = pHelper->next;
@@ -348,19 +348,19 @@ void resolveSteppingStoneCellChain (steppingStoneCycle *&result) {
     while (!(pHelper->i == result->target->i && pHelper->j == result->target->j)) {
         pHelper = pHelper->next;
     }
-    lastCell = pHelper;
-    firstCell = lastCell->next;
-    lastCell->next = NULL;
-    result->cellChain = firstCell;
+    lastShipment = pHelper;
+    firstShipment = lastShipment->next;
+    lastShipment->next = NULL;
+    result->cycle = firstShipment;
 }
 
 steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direction = "") {
-    cell *pointerCell, *pointerCellChain, *pointerCellChain1;
+    shipment *pointerShipment, *pointerShipmentCycle;
     steppingStoneCycle *dummy = new steppingStoneCycle;
     steppingStoneCycle *result;
 
-    cell *target = domain->target;
-    cell *current = domain->current;
+    shipment *target = domain->target;
+    shipment *current = domain->current;
     int level = domain->level;
 
 
@@ -377,10 +377,10 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
         complementDirection = "right";
     }
 
-    pointerCellChain = domain->cellChain;
-    if (!(pointerCellChain == NULL)) {
-        while (pointerCellChain->next != NULL) {
-            pointerCellChain = pointerCellChain->next;
+    pointerShipmentCycle = domain->cycle;
+    if (!(pointerShipmentCycle == NULL)) {
+        while (pointerShipmentCycle->next != NULL) {
+            pointerShipmentCycle = pointerShipmentCycle->next;
         }
     }
 
@@ -388,64 +388,64 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
         if (direction_ != complementDirection) {
             
             if (direction_ == "up") {
-                pointerCell = current->up;
-                while ((!(pointerCell == NULL)) && pointerCell->amount == 0) {
-                    if ((!(pointerCell == NULL)) && (pointerCell->i == target->i && pointerCell->j == target->j)) {
-                        if (!(domain->cellChain == NULL)) {
-                            pointerCellChain->next = pointerCell;
+                pointerShipment = current->up;
+                while ((!(pointerShipment == NULL)) && pointerShipment->amountOfResources == 0) {
+                    if ((!(pointerShipment == NULL)) && (pointerShipment->i == target->i && pointerShipment->j == target->j)) {
+                        if (!(domain->cycle == NULL)) {
+                            pointerShipmentCycle->next = pointerShipment;
                         } else {
-                            domain->cellChain = pointerCell;
+                            domain->cycle = pointerShipment;
                         }
-                        domain->current = pointerCell;
+                        domain->current = pointerShipment;
                         domain->level = level + 1;
                         return domain;
                     }
-                    pointerCell = pointerCell->up;
+                    pointerShipment = pointerShipment->up;
                 }
-                if (!(pointerCell == NULL) && pointerCell->amount > 0) {
-                    domain->current = pointerCell;
+                if (!(pointerShipment == NULL) && pointerShipment->amountOfResources > 0) {
+                    domain->current = pointerShipment;
                     domain->level = level + 1;
 
-                    if (!(domain->cellChain == NULL)) {
-                        pointerCellChain->next = pointerCell;
+                    if (!(domain->cycle == NULL)) {
+                        pointerShipmentCycle->next = pointerShipment;
                     } else {
-                        domain->cellChain = pointerCell;
+                        domain->cycle = pointerShipment;
                     }
 
                     result = checkSteppingStone(domain, "up");
                     if (result->valid) {
                         return result;
                     } else {
-                        if (domain->cellChain == pointerCell) {
-                            domain->cellChain = NULL;
-                        } else if (!(pointerCellChain == NULL)) {
-                            pointerCellChain->next = NULL;
+                        if (domain->cycle == pointerShipment) {
+                            domain->cycle = NULL;
+                        } else if (!(pointerShipmentCycle == NULL)) {
+                            pointerShipmentCycle->next = NULL;
                         }
                     }
                 }
             } else if (direction_ == "right") {
-                pointerCell = current->right;
-                while ((!(pointerCell == NULL)) && pointerCell->amount == 0) {
-                    if ((!(pointerCell == NULL)) && (pointerCell->i == target->i && pointerCell->j == target->j)) {
-                        if (!(domain->cellChain == NULL)) {
-                            pointerCellChain->next = pointerCell;
+                pointerShipment = current->right;
+                while ((!(pointerShipment == NULL)) && pointerShipment->amountOfResources == 0) {
+                    if ((!(pointerShipment == NULL)) && (pointerShipment->i == target->i && pointerShipment->j == target->j)) {
+                        if (!(domain->cycle == NULL)) {
+                            pointerShipmentCycle->next = pointerShipment;
                         } else {
-                            domain->cellChain = pointerCell;
+                            domain->cycle = pointerShipment;
                         }
-                        domain->current = pointerCell;
+                        domain->current = pointerShipment;
                         domain->level = level + 1;
                         return domain;
                     }
-                    pointerCell = pointerCell->right;
+                    pointerShipment = pointerShipment->right;
                 }
-                if (!(pointerCell == NULL) && pointerCell->amount > 0) {
-                    domain->current = pointerCell;
+                if (!(pointerShipment == NULL) && pointerShipment->amountOfResources > 0) {
+                    domain->current = pointerShipment;
                     domain->level = level + 1;
 
-                    if (!(domain->cellChain == NULL)) {
-                        pointerCellChain->next = pointerCell;
+                    if (!(domain->cycle == NULL)) {
+                        pointerShipmentCycle->next = pointerShipment;
                     } else {
-                        domain->cellChain = pointerCell;
+                        domain->cycle = pointerShipment;
                     }
 
                     result = checkSteppingStone(domain, "right");
@@ -453,82 +453,82 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
                     if (result->valid) {
                         return result;
                     } else {
-                        if (domain->cellChain == pointerCell) {
-                            domain->cellChain = NULL;
-                        } else if (!(pointerCellChain == NULL)) {
-                            pointerCellChain->next = NULL;
+                        if (domain->cycle == pointerShipment) {
+                            domain->cycle = NULL;
+                        } else if (!(pointerShipmentCycle == NULL)) {
+                            pointerShipmentCycle->next = NULL;
                         }
                     }
                 }
             } else if (direction_ == "down") {
-                pointerCell = current->down;
-                while ((!(pointerCell == NULL)) && pointerCell->amount == 0) {
-                    if ((!(pointerCell == NULL)) && (pointerCell->i == target->i && pointerCell->j == target->j)) {
-                        if (!(domain->cellChain == NULL)) {
-                            pointerCellChain->next = pointerCell;
+                pointerShipment = current->down;
+                while ((!(pointerShipment == NULL)) && pointerShipment->amountOfResources == 0) {
+                    if ((!(pointerShipment == NULL)) && (pointerShipment->i == target->i && pointerShipment->j == target->j)) {
+                        if (!(domain->cycle == NULL)) {
+                            pointerShipmentCycle->next = pointerShipment;
                         } else {
-                            domain->cellChain = pointerCell;
+                            domain->cycle = pointerShipment;
                         }
-                        domain->current = pointerCell;
+                        domain->current = pointerShipment;
                         domain->level = level + 1;
                         return domain;
                     }
-                    pointerCell = pointerCell->down;
+                    pointerShipment = pointerShipment->down;
                 }
-                if (!(pointerCell == NULL) && pointerCell->amount > 0) {
-                    domain->current = pointerCell;
+                if (!(pointerShipment == NULL) && pointerShipment->amountOfResources > 0) {
+                    domain->current = pointerShipment;
                     domain->level = level + 1;
 
-                    if (!(domain->cellChain == NULL)) {
-                        pointerCellChain->next = pointerCell;
+                    if (!(domain->cycle == NULL)) {
+                        pointerShipmentCycle->next = pointerShipment;
                     } else {
-                        domain->cellChain = pointerCell;
+                        domain->cycle = pointerShipment;
                     }
 
                     result = checkSteppingStone(domain, "down");
                     if (result->valid) {
                         return result;
                     } else {
-                        if (domain->cellChain == pointerCell) {
-                            domain->cellChain = NULL;
-                        } else if (!(pointerCellChain == NULL)) {
-                            pointerCellChain->next = NULL;
+                        if (domain->cycle == pointerShipment) {
+                            domain->cycle = NULL;
+                        } else if (!(pointerShipmentCycle == NULL)) {
+                            pointerShipmentCycle->next = NULL;
                         }
                     }
                 }
             } else if (direction_ == "left") {
-                pointerCell = current->left;
-                while ((!(pointerCell == NULL)) && pointerCell->amount == 0) {
-                    if ((!(pointerCell == NULL)) && (pointerCell->i == target->i && pointerCell->j == target->j)) {
-                        if (!(domain->cellChain == NULL)) {
-                            pointerCellChain->next = pointerCell;
+                pointerShipment = current->left;
+                while ((!(pointerShipment == NULL)) && pointerShipment->amountOfResources == 0) {
+                    if ((!(pointerShipment == NULL)) && (pointerShipment->i == target->i && pointerShipment->j == target->j)) {
+                        if (!(domain->cycle == NULL)) {
+                            pointerShipmentCycle->next = pointerShipment;
                         } else {
-                            domain->cellChain = pointerCell;
+                            domain->cycle = pointerShipment;
                         }
-                        domain->current = pointerCell;
+                        domain->current = pointerShipment;
                         domain->level = level + 1;
                         return domain;
                     }
-                    pointerCell = pointerCell->left;
+                    pointerShipment = pointerShipment->left;
                 }
-                if (!(pointerCell == NULL) && pointerCell->amount > 0) {
-                    domain->current = pointerCell;
+                if (!(pointerShipment == NULL) && pointerShipment->amountOfResources > 0) {
+                    domain->current = pointerShipment;
                     domain->level = level + 1;
 
-                    if (!(domain->cellChain == NULL)) {
-                        pointerCellChain->next = pointerCell;
+                    if (!(domain->cycle == NULL)) {
+                        pointerShipmentCycle->next = pointerShipment;
                     } else {
-                        domain->cellChain = pointerCell;
+                        domain->cycle = pointerShipment;
                     }
 
                     result = checkSteppingStone(domain, "left");
                     if (result->valid) {
                         return result;
                     } else {
-                        if (domain->cellChain == pointerCell) {
-                            domain->cellChain = NULL;
-                        } else if (!(pointerCellChain == NULL)) {
-                            pointerCellChain->next = NULL;
+                        if (domain->cycle == pointerShipment) {
+                            domain->cycle = NULL;
+                        } else if (!(pointerShipmentCycle == NULL)) {
+                            pointerShipmentCycle->next = NULL;
                         }
                     }
                 }
@@ -539,21 +539,21 @@ steppingStoneCycle *checkSteppingStone(steppingStoneCycle *&domain, string direc
     return dummy;
 }
 
-system_ steppingStone (system_ network) {
+transportationProblem steppingStone (transportationProblem network) {
     steppingStoneCycle *domain, *result;
     int indexOfCellTarget_i, indexOfCellTarget_j, minScore, score, countCellChain, countIteration = 1;
-    cell *pointerCell, *pointerCellChain;
+    shipment *pointerShipment, *pointerShipmentCycle;
 
-    factoryStorage *pointerFactory, *pointerStorage;
+    supplierDestination *pointerFactory, *pointerStorage;
     int nFactories, nStorages;
 
     int amountChanges;
 
     do {
         // counting factories and storages
-        pointerCell = network.firstCell;
-        pointerFactory = network.firstFactory;
-        pointerStorage = network.firstStorage;
+        pointerShipment = network.firstShipment;
+        pointerFactory = network.firstSupplier;
+        pointerStorage = network.firstDestination;
         nFactories = 0;
         nStorages = 0;
         minScore = 0;
@@ -568,25 +568,25 @@ system_ steppingStone (system_ network) {
 
         for (int i = 0; i < nFactories; i++) {
             for (int j = 0; j < nStorages; j++) {
-                while (pointerCell->i < i) {
-                    pointerCell = pointerCell->down;
+                while (pointerShipment->i < i) {
+                    pointerShipment = pointerShipment->down;
                 }
-                while (pointerCell->j < j) {
-                    pointerCell = pointerCell->right;
+                while (pointerShipment->j < j) {
+                    pointerShipment = pointerShipment->right;
                 }
 
-                rebuildingNetwork(domain, network, pointerCell->i, pointerCell->j);
-                if (pointerCell->amount == 0) {
+                rebuildingNetwork(domain, network, pointerShipment->i, pointerShipment->j);
+                if (pointerShipment->amountOfResources == 0) {
                     result = NULL;
                     result = checkSteppingStone(domain);
                     resolveSteppingStoneCellChain(result);
-                    pointerCellChain = result->cellChain;
+                    pointerShipmentCycle = result->cycle;
                     countCellChain = 0;
                     score = 0;
-                    while (!(pointerCellChain == NULL)) {
+                    while (!(pointerShipmentCycle == NULL)) {
                         countCellChain ++;
-                        score += countCellChain % 2 == 0 ? pointerCellChain->price : ((-1)*pointerCellChain->price);
-                        pointerCellChain = pointerCellChain->next;
+                        score += countCellChain % 2 == 0 ? pointerShipmentCycle->price : ((-1)*pointerShipmentCycle->price);
+                        pointerShipmentCycle = pointerShipmentCycle->next;
                     }
                     if (score < minScore) {
                         minScore = score;
@@ -594,7 +594,7 @@ system_ steppingStone (system_ network) {
                         indexOfCellTarget_j = j;
                     }
                 }
-                pointerCell = network.firstCell;
+                pointerShipment = network.firstShipment;
             }
         }
 
@@ -604,44 +604,44 @@ system_ steppingStone (system_ network) {
             result = checkSteppingStone(domain);
             resolveSteppingStoneCellChain(result);
 
-            pointerCellChain = result->cellChain;
+            pointerShipmentCycle = result->cycle;
             amountChanges = NULL; // nilai minimum dari variable keluar
             countCellChain = 0;
-            while (!(pointerCellChain == NULL)) {
+            while (!(pointerShipmentCycle == NULL)) {
                 countCellChain++;
                 if (amountChanges) {
-                    if (countCellChain % 2 != 0 && pointerCellChain->amount < amountChanges) {
-                        amountChanges = pointerCellChain->amount;
+                    if (countCellChain % 2 != 0 && pointerShipmentCycle->amountOfResources < amountChanges) {
+                        amountChanges = pointerShipmentCycle->amountOfResources;
                     }
                 } else {
                     if (countCellChain % 2 != 0) {
-                        amountChanges = pointerCellChain->amount;
+                        amountChanges = pointerShipmentCycle->amountOfResources;
                     }
                 }
-                pointerCellChain = pointerCellChain->next;
+                pointerShipmentCycle = pointerShipmentCycle->next;
             }
-            pointerCellChain = result->cellChain;
+            pointerShipmentCycle = result->cycle;
             countCellChain = 0;
-            while(!(pointerCellChain == NULL)) {
+            while(!(pointerShipmentCycle == NULL)) {
                 countCellChain++;
-                pointerCellChain->amount += countCellChain % 2 == 0 ? amountChanges : ((-1)*(amountChanges));
-                pointerCellChain = pointerCellChain->next;
+                pointerShipmentCycle->amountOfResources += countCellChain % 2 == 0 ? amountChanges : ((-1)*(amountChanges));
+                pointerShipmentCycle = pointerShipmentCycle->next;
             }
 
             //update network
-            pointerCellChain = result->cellChain;
-            while (!(pointerCellChain == NULL)) {
+            pointerShipmentCycle = result->cycle;
+            while (!(pointerShipmentCycle == NULL)) {
                 
-                pointerCell = network.firstCell;
-                while (pointerCell->i < pointerCellChain->i) {
-                    pointerCell = pointerCell->down;
+                pointerShipment = network.firstShipment;
+                while (pointerShipment->i < pointerShipmentCycle->i) {
+                    pointerShipment = pointerShipment->down;
                 }
-                while (pointerCell->j < pointerCellChain->j) {
-                    pointerCell = pointerCell->right;
+                while (pointerShipment->j < pointerShipmentCycle->j) {
+                    pointerShipment = pointerShipment->right;
                 }
 
-                pointerCell->amount = pointerCellChain->amount;
-                pointerCellChain = pointerCellChain->next;
+                pointerShipment->amountOfResources = pointerShipmentCycle->amountOfResources;
+                pointerShipmentCycle = pointerShipmentCycle->next;
             }
             network.z = zValue(network);
             cout << endl << endl;
@@ -659,10 +659,10 @@ system_ steppingStone (system_ network) {
 }
 
 int main() {
-    system_ network;
-    cell destination[100][100];
-    factoryStorage factory[100], storage[100];
-    factoryStorage* currentFactory, currentStorage;
+    transportationProblem network;
+    shipment destination[100][100];
+    supplierDestination factory[100], storage[100];
+    supplierDestination* currentFactory, currentStorage;
     int numberOfFactories = 0, numberOfStorages = 0, totalDemand = 0, totalSupply = 0;
     
     bool resume = true;
@@ -671,39 +671,39 @@ int main() {
         cout << "Number of Factories: "; cin >> numberOfFactories;
         cout << "Number of Storages: " ; cin >> numberOfStorages;
 
-        //input amount of supply for each factory
+        //input amountOfResources of supply for each factory
         for (int i = 0; i < numberOfFactories; i++) {
-            cout << "Factory - " << (i+1) << ": " ; cin >> factory[i].amount;
-            factory[i].currentAmount = factory[i].amount;
+            cout << "Factory - " << (i+1) << ": " ; cin >> factory[i].amountOfResources;
+            factory[i].currentAmountOfResources = factory[i].amountOfResources;
             factory[i].valid = true;
             factory[i].index = i;
-            totalSupply += factory[i].amount;
+            totalSupply += factory[i].amountOfResources;
             if ((i-1 >= 0) && factory[i-1].valid) {
                 factory[i-1].next = &factory[i];
             }
             if (i == 0) {
-                network.firstFactory = &factory[i];
+                network.firstSupplier = &factory[i];
             }
         }
-        //input amount of demand for each storage
+        //input amountOfResources of demand for each storage
         for (int i = 0; i < numberOfStorages; i++) {
-            cout << "Storage - " << (i+1) << ": " ; cin >> storage[i].amount;
-            storage[i].currentAmount = storage[i].amount;
+            cout << "Storage - " << (i+1) << ": " ; cin >> storage[i].amountOfResources;
+            storage[i].currentAmountOfResources = storage[i].amountOfResources;
             storage[i].valid = true;
             storage[i].index = i;
-            totalDemand += storage[i].amount;
+            totalDemand += storage[i].amountOfResources;
             if ((i-1 >= 0) && storage[i-1].valid) {
                 storage[i-1].next = &storage[i];
             }
             if (i == 0) {
-                network.firstStorage = &storage[i];
+                network.firstDestination = &storage[i];
             }
         }
         //totalDemand and totalSupply must be equal (balance)
         if (totalDemand != totalSupply) {
             cout << "total demand and total supply must be equal or balance" << endl << endl;
         } else {
-            //input price for each cell
+            //input price for each shipment
             for (int i = 0; i < numberOfFactories; i++) {
                 for (int j = 0; j < numberOfStorages; j++) {
                     destination[i][j].i = i;
@@ -711,7 +711,7 @@ int main() {
                     destination[i][j].valid = true;
                     cout << "Factory " << (i+1) << " - Storage " << (j+1) << ": "; cin >> destination[i][j].price;
                     if (i==0 && j==0) {
-                        network.firstCell = &destination[i][j];
+                        network.firstShipment = &destination[i][j];
                     }
                 }
             }
@@ -753,7 +753,7 @@ int main() {
                 destination[i][j].i = 0;
                 destination[i][j].j = 0;
                 destination[i][j].price = 0;
-                destination[i][j].amount = 0;
+                destination[i][j].amountOfResources = 0;
                 destination[i][j].up = NULL;
                 destination[i][j].down = NULL;
                 destination[i][j].left = NULL;
@@ -763,8 +763,8 @@ int main() {
         }
         for (int i = 0; i < numberOfFactories; i++) {
             factory[i].valid = false;
-            factory[i].amount = NULL;
-            factory[i].currentAmount = NULL;
+            factory[i].amountOfResources = NULL;
+            factory[i].currentAmountOfResources = NULL;
             factory[i].index = NULL;
             factory[i].next = NULL;
         }
@@ -772,16 +772,16 @@ int main() {
         totalSupply = 0;
         for (int i = 0; i < numberOfStorages; i++) {
             storage[i].valid = false;
-            storage[i].amount = NULL;
-            storage[i].currentAmount = NULL;
+            storage[i].amountOfResources = NULL;
+            storage[i].currentAmountOfResources = NULL;
             storage[i].index = NULL;
             storage[i].next = NULL;
         }
         totalDemand = 0;
         numberOfStorages = 0;
-        network.firstCell = NULL;
-        network.firstFactory = NULL;
-        network.firstStorage = NULL;
+        network.firstShipment = NULL;
+        network.firstSupplier = NULL;
+        network.firstDestination = NULL;
         network.z = NULL;
 
         system("CLS");
