@@ -660,43 +660,42 @@ transportationProblem steppingStone (transportationProblem network) {
 
 int main() {
     transportationProblem network;
-    shipment destination[100][100];
-    supplierDestination factory[100], storage[100];
-    supplierDestination* currentFactory, currentStorage;
-    int numberOfFactories = 0, numberOfStorages = 0, totalDemand = 0, totalSupply = 0;
+    shipment shipmentData[100][100];
+    supplierDestination supplier[100], destination[100];
+    int numberOfSupplier = 0, numberOfDestination = 0, totalDemand = 0, totalSupply = 0;
     
     bool resume = true;
     while (resume) {
 
-        cout << "Number of Factories: "; cin >> numberOfFactories;
-        cout << "Number of Storages: " ; cin >> numberOfStorages;
+        cout << "Number of Suppliers: "; cin >> numberOfSupplier;
+        cout << "Number of Destinations: " ; cin >> numberOfDestination;
 
-        //input amountOfResources of supply for each factory
-        for (int i = 0; i < numberOfFactories; i++) {
-            cout << "Factory - " << (i+1) << ": " ; cin >> factory[i].amountOfResources;
-            factory[i].currentAmountOfResources = factory[i].amountOfResources;
-            factory[i].valid = true;
-            factory[i].index = i;
-            totalSupply += factory[i].amountOfResources;
-            if ((i-1 >= 0) && factory[i-1].valid) {
-                factory[i-1].next = &factory[i];
+        //input amountOfResources of supply for each supplier
+        for (int i = 0; i < numberOfSupplier; i++) {
+            cout << "Supplier - " << (i+1) << ": " ; cin >> supplier[i].amountOfResources;
+            supplier[i].currentAmountOfResources = supplier[i].amountOfResources;
+            supplier[i].valid = true;
+            supplier[i].index = i;
+            totalSupply += supplier[i].amountOfResources;
+            if ((i-1 >= 0) && supplier[i-1].valid) {
+                supplier[i-1].next = &supplier[i];
             }
             if (i == 0) {
-                network.firstSupplier = &factory[i];
+                network.firstSupplier = &supplier[i];
             }
         }
-        //input amountOfResources of demand for each storage
-        for (int i = 0; i < numberOfStorages; i++) {
-            cout << "Storage - " << (i+1) << ": " ; cin >> storage[i].amountOfResources;
-            storage[i].currentAmountOfResources = storage[i].amountOfResources;
-            storage[i].valid = true;
-            storage[i].index = i;
-            totalDemand += storage[i].amountOfResources;
-            if ((i-1 >= 0) && storage[i-1].valid) {
-                storage[i-1].next = &storage[i];
+        //input amountOfResources of demand for each destination
+        for (int i = 0; i < numberOfDestination; i++) {
+            cout << "Destination - " << (i+1) << ": " ; cin >> destination[i].amountOfResources;
+            destination[i].currentAmountOfResources = destination[i].amountOfResources;
+            destination[i].valid = true;
+            destination[i].index = i;
+            totalDemand += destination[i].amountOfResources;
+            if ((i-1 >= 0) && destination[i-1].valid) {
+                destination[i-1].next = &destination[i];
             }
             if (i == 0) {
-                network.firstDestination = &storage[i];
+                network.firstDestination = &destination[i];
             }
         }
         //totalDemand and totalSupply must be equal (balance)
@@ -704,35 +703,35 @@ int main() {
             cout << "total demand and total supply must be equal or balance" << endl << endl;
         } else {
             //input price for each shipment
-            for (int i = 0; i < numberOfFactories; i++) {
-                for (int j = 0; j < numberOfStorages; j++) {
-                    destination[i][j].i = i;
-                    destination[i][j].j = j;
-                    destination[i][j].valid = true;
-                    cout << "Factory " << (i+1) << " - Storage " << (j+1) << ": "; cin >> destination[i][j].price;
+            for (int i = 0; i < numberOfSupplier; i++) {
+                for (int j = 0; j < numberOfDestination; j++) {
+                    shipmentData[i][j].i = i;
+                    shipmentData[i][j].j = j;
+                    shipmentData[i][j].valid = true;
+                    cout << "Supplier " << (i+1) << " - Destination " << (j+1) << ": "; cin >> shipmentData[i][j].price;
                     if (i==0 && j==0) {
-                        network.firstShipment = &destination[i][j];
+                        network.firstShipment = &shipmentData[i][j];
                     }
                 }
             }
             //Connecting all cells
-            for (int i = 0; i < numberOfFactories; i++) {
-                for (int j = 0; j < numberOfStorages; j++) {
+            for (int i = 0; i < numberOfSupplier; i++) {
+                for (int j = 0; j < numberOfDestination; j++) {
                     // up
-                    if ((i-1 >= 0) && destination[i-1][j].valid) {
-                        destination[i][j].up = &destination[i-1][j];
+                    if ((i-1 >= 0) && shipmentData[i-1][j].valid) {
+                        shipmentData[i][j].up = &shipmentData[i-1][j];
                     }
                     // down
-                    if ((i+1 < numberOfFactories) && destination[i+1][j].valid) {
-                        destination[i][j].down = &destination[i+1][j];
+                    if ((i+1 < numberOfSupplier) && shipmentData[i+1][j].valid) {
+                        shipmentData[i][j].down = &shipmentData[i+1][j];
                     }
                     //left
-                    if ((j-1 >= 0) && destination[i][j-1].valid) {
-                        destination[i][j].left = &destination[i][j-1];
+                    if ((j-1 >= 0) && shipmentData[i][j-1].valid) {
+                        shipmentData[i][j].left = &shipmentData[i][j-1];
                     }
                     //right
-                    if ((j+1 < numberOfStorages) && destination[i][j+1].valid) {
-                        destination[i][j].right = &destination[i][j+1];
+                    if ((j+1 < numberOfDestination) && shipmentData[i][j+1].valid) {
+                        shipmentData[i][j].right = &shipmentData[i][j+1];
                     }
                 }
             }
@@ -747,38 +746,38 @@ int main() {
         system("pause");
 
         //reset
-        for (int i = 0; i < numberOfFactories; i++) {
-            for (int j = 0; j < numberOfStorages; j++) {
-                destination[i][j].valid = false;
-                destination[i][j].i = 0;
-                destination[i][j].j = 0;
-                destination[i][j].price = 0;
-                destination[i][j].amountOfResources = 0;
-                destination[i][j].up = NULL;
-                destination[i][j].down = NULL;
-                destination[i][j].left = NULL;
-                destination[i][j].right = NULL;
-                destination[i][j].next = NULL;
+        for (int i = 0; i < numberOfSupplier; i++) {
+            for (int j = 0; j < numberOfDestination; j++) {
+                shipmentData[i][j].valid = false;
+                shipmentData[i][j].i = 0;
+                shipmentData[i][j].j = 0;
+                shipmentData[i][j].price = 0;
+                shipmentData[i][j].amountOfResources = 0;
+                shipmentData[i][j].up = NULL;
+                shipmentData[i][j].down = NULL;
+                shipmentData[i][j].left = NULL;
+                shipmentData[i][j].right = NULL;
+                shipmentData[i][j].next = NULL;
             }
         }
-        for (int i = 0; i < numberOfFactories; i++) {
-            factory[i].valid = false;
-            factory[i].amountOfResources = NULL;
-            factory[i].currentAmountOfResources = NULL;
-            factory[i].index = NULL;
-            factory[i].next = NULL;
+        for (int i = 0; i < numberOfSupplier; i++) {
+            supplier[i].valid = false;
+            supplier[i].amountOfResources = NULL;
+            supplier[i].currentAmountOfResources = NULL;
+            supplier[i].index = NULL;
+            supplier[i].next = NULL;
         }
-        numberOfFactories = 0;
+        numberOfSupplier = 0;
         totalSupply = 0;
-        for (int i = 0; i < numberOfStorages; i++) {
-            storage[i].valid = false;
-            storage[i].amountOfResources = NULL;
-            storage[i].currentAmountOfResources = NULL;
-            storage[i].index = NULL;
-            storage[i].next = NULL;
+        for (int i = 0; i < numberOfDestination; i++) {
+            destination[i].valid = false;
+            destination[i].amountOfResources = NULL;
+            destination[i].currentAmountOfResources = NULL;
+            destination[i].index = NULL;
+            destination[i].next = NULL;
         }
         totalDemand = 0;
-        numberOfStorages = 0;
+        numberOfDestination = 0;
         network.firstShipment = NULL;
         network.firstSupplier = NULL;
         network.firstDestination = NULL;
