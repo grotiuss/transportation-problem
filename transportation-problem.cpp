@@ -20,7 +20,7 @@ struct shipment {
 struct supplierDestination {
     bool valid = false;
     int a;
-    int current_a;
+    int aTemp; // 'a' value that will be changed while finding an initial solution
     int index;
     supplierDestination* next = NULL;
 };
@@ -175,20 +175,20 @@ transportationProblem northWestCorner (transportationProblem network) {
             cout << "Internal error";
         }
 
-        if (currentSupplier->current_a < currentDestination->current_a) {
-            pointerShipment->x = currentSupplier->current_a;
-            currentDestination->current_a -= currentSupplier->current_a;
-            currentSupplier->current_a = 0;
+        if (currentSupplier->aTemp  < currentDestination->aTemp)  {
+            pointerShipment->x = currentSupplier->aTemp; 
+            currentDestination->aTemp  -= currentSupplier->aTemp; 
+            currentSupplier->aTemp  = 0;
             currentSupplier = currentSupplier->next;
-        } else if (currentSupplier->current_a > currentDestination->current_a) {
-            pointerShipment->x = currentDestination->current_a;
-            currentSupplier->current_a -= currentDestination->current_a;
-            currentDestination->current_a = 0;
+        } else if (currentSupplier->aTemp  > currentDestination->aTemp)  {
+            pointerShipment->x = currentDestination->aTemp; 
+            currentSupplier->aTemp  -= currentDestination->aTemp; 
+            currentDestination->aTemp  = 0;
             currentDestination = currentDestination->next;
         } else {
-            pointerShipment->x = currentSupplier->current_a;
-            currentSupplier->current_a = 0;
-            currentDestination->current_a = 0;
+            pointerShipment->x = currentSupplier->aTemp; 
+            currentSupplier->aTemp  = 0;
+            currentDestination->aTemp  = 0;
             currentSupplier = currentSupplier->next;
             currentDestination = currentDestination->next;
         }
@@ -244,7 +244,7 @@ void rebuildingNetwork(steppingStoneCycle *&domain, transportationProblem networ
         }
         supplier[i]->valid = true;
         supplier[i]->a = pointerSupplier->a;
-        supplier[i]->current_a = pointerSupplier->current_a;
+        supplier[i]->aTemp  = pointerSupplier->aTemp; 
         supplier[i]->index = pointerSupplier->index;
         pointerSupplier = network.firstSupplier;
     }
@@ -255,7 +255,7 @@ void rebuildingNetwork(steppingStoneCycle *&domain, transportationProblem networ
         }
         destination[i]->valid = true;
         destination[i]->a = pointerDestination->a;
-        destination[i]->current_a = pointerDestination->current_a;
+        destination[i]->aTemp  = pointerDestination->aTemp; 
         destination[i]->index = pointerDestination->index;
         pointerDestination = network.firstDestination;
     }
@@ -672,7 +672,7 @@ int main() {
         //input a of supply for each supplier
         for (int i = 0; i < numberOfSupplier; i++) {
             cout << "Supplier - " << (i+1) << ": " ; cin >> supplier[i].a;
-            supplier[i].current_a = supplier[i].a;
+            supplier[i].aTemp  = supplier[i].a;
             supplier[i].valid = true;
             supplier[i].index = i;
             totalSupply += supplier[i].a;
@@ -686,7 +686,7 @@ int main() {
         //input a of demand for each destination
         for (int i = 0; i < numberOfDestination; i++) {
             cout << "Destination - " << (i+1) << ": " ; cin >> destination[i].a;
-            destination[i].current_a = destination[i].a;
+            destination[i].aTemp  = destination[i].a;
             destination[i].valid = true;
             destination[i].index = i;
             totalDemand += destination[i].a;
@@ -762,7 +762,7 @@ int main() {
         for (int i = 0; i < numberOfSupplier; i++) {
             supplier[i].valid = false;
             supplier[i].a = NULL;
-            supplier[i].current_a = NULL;
+            supplier[i].aTemp  = NULL;
             supplier[i].index = NULL;
             supplier[i].next = NULL;
         }
@@ -771,7 +771,7 @@ int main() {
         for (int i = 0; i < numberOfDestination; i++) {
             destination[i].valid = false;
             destination[i].a = NULL;
-            destination[i].current_a = NULL;
+            destination[i].aTemp  = NULL;
             destination[i].index = NULL;
             destination[i].next = NULL;
         }
