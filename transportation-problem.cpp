@@ -588,12 +588,9 @@ transportationProblem steppingStone (transportationProblem network) {
                         cout << endl;
                         while (!(pointerShipmentCycle == NULL)) {
                             countCellChain ++;
-                            cout << "(" << pointerShipmentCycle->i << "," << pointerShipmentCycle->j << ";" << pointerShipmentCycle->c << ")";
                             score += countCellChain % 2 == 0 ? pointerShipmentCycle->c : ((-1)*pointerShipmentCycle->c);
                             pointerShipmentCycle = pointerShipmentCycle->next;
-                        }
-                        cout << endl;
-                        cout << result->target->i << "," << result->target->j << "; score: " << score << endl; 
+                        } 
                         if (score < minScore) {
                             minScore = score;
                             indexOfCellTarget_i = i;
