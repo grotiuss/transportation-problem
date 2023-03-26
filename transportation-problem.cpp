@@ -543,53 +543,53 @@ steppingStoneCycle *checkSteppingStone (steppingStoneCycle *&domain, string dire
 transportationProblem steppingStone (transportationProblem network) {
     steppingStoneCycle *domain, *result;
     int indexOfCellTarget_i, indexOfCellTarget_j, minScore, score, countCellChain, countIteration = 1;
-    shipment *pointerShipment, *pointerShipmentCycle;
+    shipment *pShipment, *pShipmentCycle;
 
-    supplierDestination *pointerFactory, *pointerStorage;
+    supplierDestination *pFactory, *pStorage;
     int nFactories, nStorages;
 
     int amountChanges;
 
     do {
         // counting factories and storages
-        pointerShipment = network.firstShipment;
-        pointerFactory = network.firstSupplier;
-        pointerStorage = network.firstDestination;
+        pShipment = network.firstShipment;
+        pFactory = network.firstSupplier;
+        pStorage = network.firstDestination;
         nFactories = 0;
         nStorages = 0;
         minScore = 0;
-        while (!(pointerFactory == NULL)) {
+        while (!(pFactory == NULL)) {
             nFactories ++;
-            pointerFactory = pointerFactory->next;
+            pFactory = pFactory->next;
         }
-        while (!(pointerStorage == NULL)) {
+        while (!(pStorage == NULL)) {
             nStorages ++;
-            pointerStorage = pointerStorage->next;
+            pStorage = pStorage->next;
         }
 
         for (int i = 0; i < nFactories; i++) {
             for (int j = 0; j < nStorages; j++) {
-                while (pointerShipment->i < i) {
-                    pointerShipment = pointerShipment->down;
+                while (pShipment->i < i) {
+                    pShipment = pShipment->down;
                 }
-                while (pointerShipment->j < j) {
-                    pointerShipment = pointerShipment->right;
+                while (pShipment->j < j) {
+                    pShipment = pShipment->right;
                 }
 
-                rebuildingNetwork(domain, network, pointerShipment->i, pointerShipment->j);
-                if (pointerShipment->x == 0) {
+                rebuildingNetwork(domain, network, pShipment->i, pShipment->j);
+                if (pShipment->x == 0) {
                     result = NULL;
                     result = checkSteppingStone(domain);
                     if (result->valid) {
                         rearrangeSteppingStoneShipmentCycle(result);
-                        pointerShipmentCycle = result->cycle;
+                        pShipmentCycle = result->cycle;
                         countCellChain = 0;
                         score = 0;
                         cout << endl;
-                        while (!(pointerShipmentCycle == NULL)) {
+                        while (!(pShipmentCycle == NULL)) {
                             countCellChain ++;
-                            score += countCellChain % 2 == 0 ? pointerShipmentCycle->c : ((-1)*pointerShipmentCycle->c);
-                            pointerShipmentCycle = pointerShipmentCycle->next;
+                            score += countCellChain % 2 == 0 ? pShipmentCycle->c : ((-1)*pShipmentCycle->c);
+                            pShipmentCycle = pShipmentCycle->next;
                         } 
                         if (score < minScore) {
                             minScore = score;
@@ -598,7 +598,7 @@ transportationProblem steppingStone (transportationProblem network) {
                         }
                     }
                 }
-                pointerShipment = network.firstShipment;
+                pShipment = network.firstShipment;
             }
         }
 
@@ -608,44 +608,44 @@ transportationProblem steppingStone (transportationProblem network) {
             result = checkSteppingStone(domain);
             rearrangeSteppingStoneShipmentCycle(result);
 
-            pointerShipmentCycle = result->cycle;
+            pShipmentCycle = result->cycle;
             amountChanges = NULL; // nilai minimum dari variable keluar
             countCellChain = 0;
-            while (!(pointerShipmentCycle == NULL)) {
+            while (!(pShipmentCycle == NULL)) {
                 countCellChain++;
                 if (amountChanges) {
-                    if (countCellChain % 2 != 0 && pointerShipmentCycle->x < amountChanges) {
-                        amountChanges = pointerShipmentCycle->x;
+                    if (countCellChain % 2 != 0 && pShipmentCycle->x < amountChanges) {
+                        amountChanges = pShipmentCycle->x;
                     }
                 } else {
                     if (countCellChain % 2 != 0) {
-                        amountChanges = pointerShipmentCycle->x;
+                        amountChanges = pShipmentCycle->x;
                     }
                 }
-                pointerShipmentCycle = pointerShipmentCycle->next;
+                pShipmentCycle = pShipmentCycle->next;
             }
-            pointerShipmentCycle = result->cycle;
+            pShipmentCycle = result->cycle;
             countCellChain = 0;
-            while(!(pointerShipmentCycle == NULL)) {
+            while(!(pShipmentCycle == NULL)) {
                 countCellChain++;
-                pointerShipmentCycle->x += countCellChain % 2 == 0 ? amountChanges : ((-1)*(amountChanges));
-                pointerShipmentCycle = pointerShipmentCycle->next;
+                pShipmentCycle->x += countCellChain % 2 == 0 ? amountChanges : ((-1)*(amountChanges));
+                pShipmentCycle = pShipmentCycle->next;
             }
 
             //update network
-            pointerShipmentCycle = result->cycle;
-            while (!(pointerShipmentCycle == NULL)) {
+            pShipmentCycle = result->cycle;
+            while (!(pShipmentCycle == NULL)) {
                 
-                pointerShipment = network.firstShipment;
-                while (pointerShipment->i < pointerShipmentCycle->i) {
-                    pointerShipment = pointerShipment->down;
+                pShipment = network.firstShipment;
+                while (pShipment->i < pShipmentCycle->i) {
+                    pShipment = pShipment->down;
                 }
-                while (pointerShipment->j < pointerShipmentCycle->j) {
-                    pointerShipment = pointerShipment->right;
+                while (pShipment->j < pShipmentCycle->j) {
+                    pShipment = pShipment->right;
                 }
 
-                pointerShipment->x = pointerShipmentCycle->x;
-                pointerShipmentCycle = pointerShipmentCycle->next;
+                pShipment->x = pShipmentCycle->x;
+                pShipmentCycle = pShipmentCycle->next;
             }
             network.z = zValue(network);
             cout << endl << endl;
