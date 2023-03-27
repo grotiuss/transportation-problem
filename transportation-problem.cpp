@@ -148,51 +148,37 @@ int zValue (transportationProblem network) {
 }
 
 transportationProblem northWestCorner (transportationProblem network) {
-    supplierDestination* currentSupplier = network.firstSupplier;
-    supplierDestination* currentDestination = network.firstDestination;
-    shipment* pointerFirstShipmentOfRow;
-    shipment* pointerShipment;
-    int indexShipmentRow, indexShipmentColumn;
+    supplierDestination *pSupplier = network.firstSupplier;
+    supplierDestination *pDestination = network.firstDestination;
+    shipment *pShipment;
 
     do {
-        indexShipmentRow = currentSupplier->index;
-        indexShipmentColumn = currentDestination->index;
-
-        pointerFirstShipmentOfRow = network.firstShipment;
-        while (pointerFirstShipmentOfRow->i < indexShipmentRow && pointerFirstShipmentOfRow->down != NULL) {
-            pointerFirstShipmentOfRow = pointerFirstShipmentOfRow->down;
+        pShipment = network.firstShipment;
+        while (pShipment->i < pSupplier->index && pShipment->down != NULL) {
+            pShipment = pShipment->down;
         }
-        if (pointerFirstShipmentOfRow->i != indexShipmentRow) {
-            system("CLS");
-            cout << "Internal error";
-        }
-        pointerShipment = pointerFirstShipmentOfRow;
-        while (pointerShipment->j < indexShipmentColumn && pointerShipment->right != NULL) {
-            pointerShipment = pointerShipment->right;
-        }
-        if (pointerShipment->j != indexShipmentColumn) {
-            system("CLS");
-            cout << "Internal error";
+        while (pShipment->j < pDestination->index && pShipment->right != NULL) {
+            pShipment = pShipment->right;
         }
 
-        if (currentSupplier->aTemp  < currentDestination->aTemp)  {
-            pointerShipment->x = currentSupplier->aTemp; 
-            currentDestination->aTemp  -= currentSupplier->aTemp; 
-            currentSupplier->aTemp  = 0;
-            currentSupplier = currentSupplier->next;
-        } else if (currentSupplier->aTemp  > currentDestination->aTemp)  {
-            pointerShipment->x = currentDestination->aTemp; 
-            currentSupplier->aTemp  -= currentDestination->aTemp; 
-            currentDestination->aTemp  = 0;
-            currentDestination = currentDestination->next;
+        if (pSupplier->aTemp < pDestination->aTemp) {
+            pShipment->x = pSupplier->aTemp;
+            pDestination->aTemp -= pSupplier->aTemp;
+            pSupplier->aTemp = 0;
+            pSupplier = pSupplier->next;
+        } else if (pSupplier->aTemp > pDestination->aTemp) {
+            pShipment->x = pDestination->aTemp;
+            pSupplier->aTemp -= pDestination->aTemp;
+            pDestination->aTemp = 0;
+            pDestination = pDestination->next;
         } else {
-            pointerShipment->x = currentSupplier->aTemp; 
-            currentSupplier->aTemp  = 0;
-            currentDestination->aTemp  = 0;
-            currentSupplier = currentSupplier->next;
-            currentDestination = currentDestination->next;
+            pShipment->x = pSupplier->aTemp;
+            pSupplier->aTemp = 0;
+            pDestination->aTemp = 0;
+            pSupplier = pSupplier->next;
+            pDestination = pDestination->next;
         }
-    } while (currentSupplier != NULL && currentDestination != NULL);
+    } while (pSupplier != NULL && pDestination != NULL);
 
     network.z = zValue(network);
     return network;
