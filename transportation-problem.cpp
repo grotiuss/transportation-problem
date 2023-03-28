@@ -199,10 +199,6 @@ void rebuildingNetwork(steppingStoneCycle *&domain, transportationProblem networ
         pointerDestination = pointerDestination->next;
     }
 
-    pointerSupplier = network.firstSupplier;
-    pointerDestination = network.firstDestination;
-
-
     // re-building network
     shipment *shipmentData[nSupplier][nDestination];
     for (int i = 0; i < nSupplier; i++) {
@@ -242,6 +238,52 @@ void rebuildingNetwork(steppingStoneCycle *&domain, transportationProblem networ
     domain->current = shipmentData[indexTarget_i][indexTarget_j];
     domain->valid = true;
 
+}
+
+void initiateSteppingStoneCycle (steppingStoneCycle *&domain, transportationProblem network, int indexOfTarget_i, int indexOfTarget_j) {
+    supplierDestination *pSupplier = network.firstSupplier;
+    supplierDestination *pDestination = network.firstDestination;
+    int nSupplier = 0, nDestination = 0;
+
+    //counting suppliers and destinations
+    while (!(pSupplier == NULL)) {
+        nSupplier ++;
+        pSupplier = pSupplier->next;
+    }
+    while (!(pDestination == NULL)) {
+        nDestination ++;
+        pDestination = pDestination->next;
+    }
+
+    shipment *shipmentData[nSupplier][nDestination], *pShipment;
+    for (int i = 0; i < nSupplier; i++) {
+        for (int j = 0; j < nDestination; j++) {
+            pShipment = network.firstShipment;
+            while (pShipment->i < i) { pShipment = pShipment->down; }
+            while (pShipment->j < j) { pShipment = pShipment->right; }
+            shipmentData[i][j] = new shipment;
+            shipmentData[i][j]->valid = true;
+            shipmentData[i][j]->i = pShipment->i;
+            shipmentData[i][j]->j = pShipment->j;
+            shipmentData[i][j]->c = pShipment->c;
+            shipmentData[i][j]->x = pShipment->x;
+        }
+    }
+
+    //connecting all shipments that had been created
+    for (int i = 0; i < nSupplier; i++) {
+        for (int j = 0; j < nDestination; j++) {
+            shipmentData[i][j]->left = (j-1) >= 0 ? shipmentData[i][j-1] : NULL;
+            shipmentData[i][j]->right = (j+1) < nDestination ? shipmentData[i][j+1] : NULL;
+            shipmentData[i][j]->up = (i-1) >= 0 ? shipmentData[i-1][j] : NULL;
+            shipmentData[i][j]->down = (i+1) < nSupplier ? shipmentData[i+1][j] : NULL;
+        }
+    }
+
+    domain = new steppingStoneCycle;
+    domain->target = shipmentData[indexOfTarget_i][indexOfTarget_j];
+    domain->current = domain->target; //initial condition
+    domain->valid = true;
 }
 
 void rearrangeSteppingStoneShipmentCycle (steppingStoneCycle *&result) {
@@ -601,7 +643,8 @@ transportationProblem steppingStone (transportationProblem network) {
                     pShipment = pShipment->right;
                 }
 
-                rebuildingNetwork(domain, network, pShipment->i, pShipment->j);
+                // rebuildingNetwork(domain, network, pShipment->i, pShipment->j);
+                initiateSteppingStoneCycle(domain, network, pShipment->i, pShipment->j);
                 if (pShipment->x == 0) {
                     result = NULL;
                     // result = checkSteppingStone(domain);
@@ -628,7 +671,8 @@ transportationProblem steppingStone (transportationProblem network) {
         }
 
         if (minScore < 0) {
-            rebuildingNetwork(domain, network, indexOfCellTarget_i, indexOfCellTarget_j);
+            // rebuildingNetwork(domain, network, indexOfCellTarget_i, indexOfCellTarget_j);
+            initiateSteppingStoneCycle(domain, network, indexOfCellTarget_i, indexOfCellTarget_j);
             result = NULL;
             // result = checkSteppingStone(domain);
             result = findSteppingStoneCycle(domain);
