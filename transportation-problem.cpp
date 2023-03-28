@@ -490,6 +490,179 @@ steppingStoneCycle *checkSteppingStone (steppingStoneCycle *&domain, string dire
     return dummy;
 }
 
+steppingStoneCycle *findSteppingStoneCycle (steppingStoneCycle *&domain, string direction = "") {
+    steppingStoneCycle *result;
+    int checkpointLevel = domain->level;
+
+    string directions[] = {"up", "right", "down", "left"};
+    string complementDirection = "";
+    if (direction == "up") {
+        complementDirection = "down";
+    } else if (direction == "right") {
+        complementDirection = "left";
+    } else if (direction == "down") {
+        complementDirection = "up";
+    } else if (direction == "left") {
+        complementDirection = "right";
+    }
+
+    shipment *pShipmentCycle;
+    pShipmentCycle = domain->cycle;
+    if (!(pShipmentCycle == NULL)) {
+        while (pShipmentCycle->next != NULL) {
+            pShipmentCycle = pShipmentCycle->next;
+        }
+    }
+
+    shipment *pShipment, *pShipmentCheckpoint;
+    pShipmentCheckpoint = domain->current;
+    for (string direction_ : directions) {
+        if (direction_  != complementDirection) {
+            if (direction_ == "up") {
+                pShipment = domain->current->up;
+                while ((!(pShipment == NULL)) && pShipment->x == 0) {
+                    if (pShipment->i == domain->target->i && pShipment->j == domain->target->j) {
+                        pShipmentCycle->next = pShipment;
+                        domain->current = pShipment;
+                        domain->level = checkpointLevel + 1;
+                        return domain;
+                    }
+                    pShipment = pShipment->up;
+                }
+                
+                if (!(pShipment == NULL) && pShipment->x > 0) {
+                    domain->current = pShipment;
+                    domain->level = checkpointLevel + 1;
+                    if (pShipmentCycle == NULL) {
+                        domain->cycle = pShipment;
+                    } else {
+                        pShipmentCycle->next = pShipment;
+                    }
+                    
+                    result = findSteppingStoneCycle(domain, "up");
+                    if (result->valid) {
+                        return result;
+                    } else { // reset domain
+                        domain->current = pShipmentCheckpoint;
+                        domain->level = checkpointLevel;
+                        if (pShipmentCycle == NULL) {
+                            domain->cycle = NULL;
+                        } else {
+                            pShipmentCycle->next = NULL;
+                        }
+                    }
+                }
+                
+            } else if (direction_ == "right") {
+                pShipment = domain->current->right;
+                while ((!(pShipment == NULL)) && pShipment->x == 0) {
+                    if (pShipment->i == domain->target->i && pShipment->j == domain->target->j) {
+                        pShipmentCycle->next = pShipment;
+                        domain->current = pShipment;
+                        domain->level = checkpointLevel + 1;
+                        return domain;
+                    }
+                    pShipment = pShipment->right;
+                }
+                
+                if (!(pShipment == NULL) && pShipment->x > 0) {
+                    domain->current = pShipment;
+                    domain->level = checkpointLevel + 1;
+                    if (pShipmentCycle == NULL) {
+                        domain->cycle = pShipment;
+                    } else {
+                        pShipmentCycle->next = pShipment;
+                    }
+                    
+                    result = findSteppingStoneCycle(domain, "right");
+                    if (result->valid) {
+                        return result;
+                    } else { // reset domain
+                        domain->current = pShipmentCheckpoint;
+                        domain->level = checkpointLevel;
+                        if (pShipmentCycle == NULL) {
+                            domain->cycle = NULL;
+                        } else {
+                            pShipmentCycle->next = NULL;
+                        }
+                    }
+                }
+            } else if (direction_ == "down") {
+                pShipment = domain->current->down;
+                while ((!(pShipment == NULL)) && pShipment->x == 0) {
+                    if (pShipment->i == domain->target->i && pShipment->j == domain->target->j) {
+                        pShipmentCycle->next = pShipment;
+                        domain->current = pShipment;
+                        domain->level = checkpointLevel + 1;
+                        return domain;
+                    }
+                    pShipment = pShipment->down;
+                }
+                
+                if (!(pShipment == NULL) && pShipment->x > 0) {
+                    domain->current = pShipment;
+                    domain->level = checkpointLevel + 1;
+                    if (pShipmentCycle == NULL) {
+                        domain->cycle = pShipment;
+                    } else {
+                        pShipmentCycle->next = pShipment;
+                    }
+                    
+                    result = findSteppingStoneCycle(domain, "down");
+                    if (result->valid) {
+                        return result;
+                    } else { // reset domain
+                        domain->current = pShipmentCheckpoint;
+                        domain->level = checkpointLevel;
+                        if (pShipmentCycle == NULL) {
+                            domain->cycle = NULL;
+                        } else {
+                            pShipmentCycle->next = NULL;
+                        }
+                    }
+                }
+            } else if (direction_ == "left") {
+                pShipment = domain->current->left;
+                while ((!(pShipment == NULL)) && pShipment->x == 0) {
+                    if (pShipment->i == domain->target->i && pShipment->j == domain->target->j) {
+                        pShipmentCycle->next = pShipment;
+                        domain->current = pShipment;
+                        domain->level = checkpointLevel + 1;
+                        return domain;
+                    }
+                    pShipment = pShipment->left;
+                }
+                
+                if (!(pShipment == NULL) && pShipment->x > 0) {
+                    domain->current = pShipment;
+                    domain->level = checkpointLevel + 1;
+                    if (pShipmentCycle == NULL) {
+                        domain->cycle = pShipment;
+                    } else {
+                        pShipmentCycle->next = pShipment;
+                    }
+                    
+                    result = findSteppingStoneCycle(domain, "left");
+                    if (result->valid) {
+                        return result;
+                    } else { // reset domain
+                        domain->current = pShipmentCheckpoint;
+                        domain->level = checkpointLevel;
+                        if (pShipmentCycle == NULL) {
+                            domain->cycle = NULL;
+                        } else {
+                            pShipmentCycle->next = NULL;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    steppingStoneCycle *dummy = new steppingStoneCycle;
+    return dummy;
+}
+
 transportationProblem steppingStone (transportationProblem network) {
     steppingStoneCycle *domain, *result;
     int indexOfCellTarget_i, indexOfCellTarget_j, minScore, score, countCellChain, countIteration = 1;
@@ -529,7 +702,8 @@ transportationProblem steppingStone (transportationProblem network) {
                 rebuildingNetwork(domain, network, pShipment->i, pShipment->j);
                 if (pShipment->x == 0) {
                     result = NULL;
-                    result = checkSteppingStone(domain);
+                    // result = checkSteppingStone(domain);
+                    result = findSteppingStoneCycle(domain);
                     if (result->valid) {
                         rearrangeSteppingStoneShipmentCycle(result);
                         pShipmentCycle = result->cycle;
@@ -554,7 +728,8 @@ transportationProblem steppingStone (transportationProblem network) {
         if (minScore < 0) {
             rebuildingNetwork(domain, network, indexOfCellTarget_i, indexOfCellTarget_j);
             result = NULL;
-            result = checkSteppingStone(domain);
+            // result = checkSteppingStone(domain);
+            result = findSteppingStoneCycle(domain);
             rearrangeSteppingStoneShipmentCycle(result);
 
             pShipmentCycle = result->cycle;
