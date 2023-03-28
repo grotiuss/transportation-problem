@@ -571,7 +571,6 @@ transportationProblem steppingStone (transportationProblem network) {
                         pShipmentCycle = result->cycle;
                         countCellChain = 0;
                         score = 0;
-                        cout << endl;
                         while (!(pShipmentCycle == NULL)) {
                             countCellChain ++;
                             score += countCellChain % 2 == 0 ? pShipmentCycle->c : ((-1)*pShipmentCycle->c);
