@@ -204,8 +204,7 @@ void rebuildingNetwork(steppingStoneCycle *&domain, transportationProblem networ
 
 
     // re-building network
-    shipment* shipmentData[nSupplier][nDestination];
-    supplierDestination *supplier[nSupplier], *destination[nDestination];
+    shipment *shipmentData[nSupplier][nDestination];
     for (int i = 0; i < nSupplier; i++) {
         for (int j = 0; j < nDestination; j++) {
             shipmentData[i][j] = new shipment;
@@ -223,32 +222,8 @@ void rebuildingNetwork(steppingStoneCycle *&domain, transportationProblem networ
             pointerShipment = network.firstShipment;
         }
     }
-    for (int i = 0; i < nSupplier; i++) {
-        supplier[i] = new supplierDestination;
-        while (pointerSupplier->index < i) {
-            pointerSupplier = pointerSupplier->next;
-        }
-        supplier[i]->valid = true;
-        supplier[i]->a = pointerSupplier->a;
-        supplier[i]->aTemp  = pointerSupplier->aTemp; 
-        supplier[i]->index = pointerSupplier->index;
-        pointerSupplier = network.firstSupplier;
-    }
-    for (int i = 0; i < nDestination; i++) {
-        destination[i] = new supplierDestination;
-        while (pointerDestination->index < i) {
-            pointerDestination = pointerDestination->next;
-        }
-        destination[i]->valid = true;
-        destination[i]->a = pointerDestination->a;
-        destination[i]->aTemp  = pointerDestination->aTemp; 
-        destination[i]->index = pointerDestination->index;
-        pointerDestination = network.firstDestination;
-    }
 
-    // connecting all cells, storages, and factories that had been created
-    shipment *firstShipment = shipmentData[0][0];
-    supplierDestination *firstDestination = destination[0], *firstSupplier = supplier[0];
+    // connecting all shipments that had been created
     for (int i = 0; i < nSupplier; i++) {
         for (int j = 0; j < nDestination; j++) {
             // left
@@ -261,17 +236,6 @@ void rebuildingNetwork(steppingStoneCycle *&domain, transportationProblem networ
             shipmentData[i][j]->down = (i+1) < nSupplier ? shipmentData[i+1][j] : NULL;
         }
     }
-    for (int i = 0; i < nSupplier; i++) {
-        supplier[i]->next = (i+1) < nSupplier ? supplier[i+1] : NULL;
-    }
-    for (int i = 0; i < nDestination; i++) {
-        destination[i]->next = (i+1) < nDestination ? destination[i+1] : NULL;
-    }
-
-    transportationProblem *network_ = new transportationProblem;
-    network_->firstShipment = firstShipment;
-    network_->firstSupplier = firstSupplier;
-    network_->firstDestination = firstDestination;
 
     domain = new steppingStoneCycle;
     domain->target = shipmentData[indexTarget_i][indexTarget_j];
