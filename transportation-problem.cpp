@@ -184,64 +184,50 @@ transportationProblem northWestCorner (transportationProblem network) {
     return network;
 }
 
-void rebuildingNetwork(steppingStoneCycle *&domain, transportationProblem network, int indexTarget_i, int indexTarget_j) {
-    supplierDestination *pointerSupplier = network.firstSupplier, *pointerDestination = network.firstDestination;
-    shipment *pointerShipment = network.firstShipment;
+void initiateSteppingStoneCycle (steppingStoneCycle *&domain, transportationProblem network, int indexOfTarget_i, int indexOfTarget_j) {
+    supplierDestination *pSupplier = network.firstSupplier;
+    supplierDestination *pDestination = network.firstDestination;
     int nSupplier = 0, nDestination = 0;
 
-    // counting factories and storages
-    while (!(pointerSupplier == NULL)) {
+    //counting suppliers and destinations
+    while (!(pSupplier == NULL)) {
         nSupplier ++;
-        pointerSupplier = pointerSupplier->next;
+        pSupplier = pSupplier->next;
     }
-    while (!(pointerDestination == NULL)) {
+    while (!(pDestination == NULL)) {
         nDestination ++;
-        pointerDestination = pointerDestination->next;
+        pDestination = pDestination->next;
     }
 
-    pointerSupplier = network.firstSupplier;
-    pointerDestination = network.firstDestination;
-
-
-    // re-building network
-    shipment *shipmentData[nSupplier][nDestination];
+    shipment *shipmentData[nSupplier][nDestination], *pShipment;
     for (int i = 0; i < nSupplier; i++) {
         for (int j = 0; j < nDestination; j++) {
+            pShipment = network.firstShipment;
+            while (pShipment->i < i) { pShipment = pShipment->down; }
+            while (pShipment->j < j) { pShipment = pShipment->right; }
             shipmentData[i][j] = new shipment;
-            while (pointerShipment->i < i) {
-                pointerShipment = pointerShipment->down;
-            }
-            while (pointerShipment->j < j) {
-                pointerShipment = pointerShipment->right;
-            }
             shipmentData[i][j]->valid = true;
-            shipmentData[i][j]->i = pointerShipment->i;
-            shipmentData[i][j]->j = pointerShipment->j;
-            shipmentData[i][j]->c = pointerShipment->c;
-            shipmentData[i][j]->x = pointerShipment->x;
-            pointerShipment = network.firstShipment;
+            shipmentData[i][j]->i = pShipment->i;
+            shipmentData[i][j]->j = pShipment->j;
+            shipmentData[i][j]->c = pShipment->c;
+            shipmentData[i][j]->x = pShipment->x;
         }
     }
 
-    // connecting all shipments that had been created
+    //connecting all shipments that had been created
     for (int i = 0; i < nSupplier; i++) {
         for (int j = 0; j < nDestination; j++) {
-            // left
             shipmentData[i][j]->left = (j-1) >= 0 ? shipmentData[i][j-1] : NULL;
-            //right
             shipmentData[i][j]->right = (j+1) < nDestination ? shipmentData[i][j+1] : NULL;
-            //up
             shipmentData[i][j]->up = (i-1) >= 0 ? shipmentData[i-1][j] : NULL;
-            //down
             shipmentData[i][j]->down = (i+1) < nSupplier ? shipmentData[i+1][j] : NULL;
         }
     }
 
     domain = new steppingStoneCycle;
-    domain->target = shipmentData[indexTarget_i][indexTarget_j];
-    domain->current = shipmentData[indexTarget_i][indexTarget_j];
+    domain->target = shipmentData[indexOfTarget_i][indexOfTarget_j];
+    domain->current = domain->target; //initial condition
     domain->valid = true;
-
 }
 
 void rearrangeSteppingStoneShipmentCycle (steppingStoneCycle *&result) {
@@ -381,7 +367,7 @@ steppingStoneCycle *findSteppingStoneCycle (steppingStoneCycle *&domain, string 
 
 transportationProblem steppingStone (transportationProblem network) {
     steppingStoneCycle *domain, *result;
-    int indexOfCellTarget_i, indexOfCellTarget_j, minScore, score, countCellChain, countIteration = 1;
+    int indexOfCellTarget_i, indexOfCellTarget_j, minScore, score, countCellChain, countIteration = 0;
     shipment *pShipment, *pShipmentCycle;
 
     supplierDestination *pFactory, *pStorage;
@@ -408,16 +394,11 @@ transportationProblem steppingStone (transportationProblem network) {
 
         for (int i = 0; i < nFactories; i++) {
             for (int j = 0; j < nStorages; j++) {
-                while (pShipment->i < i) {
-                    pShipment = pShipment->down;
-                }
-                while (pShipment->j < j) {
-                    pShipment = pShipment->right;
-                }
+                while (pShipment->i < i) pShipment = pShipment->down;
+                while (pShipment->j < j) pShipment = pShipment->right;
 
-                rebuildingNetwork(domain, network, pShipment->i, pShipment->j);
+                initiateSteppingStoneCycle(domain, network, pShipment->i, pShipment->j);
                 if (pShipment->x == 0) {
-                    result = NULL;
                     result = findSteppingStoneCycle(domain);
                     if (result->valid) {
                         rearrangeSteppingStoneShipmentCycle(result);
@@ -441,27 +422,23 @@ transportationProblem steppingStone (transportationProblem network) {
         }
 
         if (minScore < 0) {
-            rebuildingNetwork(domain, network, indexOfCellTarget_i, indexOfCellTarget_j);
-            result = NULL;
+            initiateSteppingStoneCycle(domain, network, indexOfCellTarget_i, indexOfCellTarget_j);
             result = findSteppingStoneCycle(domain);
             rearrangeSteppingStoneShipmentCycle(result);
 
             pShipmentCycle = result->cycle;
             amountChanges = NULL; // nilai minimum dari variable keluar
             countCellChain = 0;
+
             while (!(pShipmentCycle == NULL)) {
-                countCellChain++;
-                if (amountChanges) {
-                    if (countCellChain % 2 != 0 && pShipmentCycle->x < amountChanges) {
-                        amountChanges = pShipmentCycle->x;
-                    }
-                } else {
-                    if (countCellChain % 2 != 0) {
+                if (++countCellChain % 2 != 0) {
+                    if ((!amountChanges) || pShipmentCycle->x < amountChanges) {
                         amountChanges = pShipmentCycle->x;
                     }
                 }
                 pShipmentCycle = pShipmentCycle->next;
             }
+
             pShipmentCycle = result->cycle;
             countCellChain = 0;
             while(!(pShipmentCycle == NULL)) {
@@ -487,7 +464,7 @@ transportationProblem steppingStone (transportationProblem network) {
             }
             network.z = zValue(network);
             cout << endl << endl;
-            display_system(network, "Stepping Stone", countIteration++);
+            display_system(network, "Stepping Stone", ++countIteration);
         }
     
     } while (minScore < 0);
