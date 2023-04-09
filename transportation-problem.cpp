@@ -36,9 +36,7 @@ struct steppingStoneCycle {
     shipment *target;
     shipment *current;
     shipment *cycle = NULL;
-    int level = 0;
-    int score;
-    bool valid = false;
+    bool solved = false;
 };
 
 void display_system (transportationProblem network, string title = "Table", int iteration = 0) {
@@ -227,10 +225,9 @@ void initiateSteppingStoneCycle (steppingStoneCycle *&domain, transportationProb
     domain = new steppingStoneCycle;
     domain->target = shipmentData[indexOfTarget_i][indexOfTarget_j];
     domain->current = domain->target; //initial condition
-    domain->valid = true;
 }
 
-void rearrangeSteppingStoneShipmentCycle (steppingStoneCycle *&result) {
+void rearrangeSteppingStoneCycle (steppingStoneCycle *&result) {
     int count = 0;
     shipment *pHelper;
     pHelper = result->cycle;
@@ -292,9 +289,8 @@ void rearrangeSteppingStoneShipmentCycle (steppingStoneCycle *&result) {
 
 steppingStoneCycle *findSteppingStoneCycle (steppingStoneCycle *&domain, string direction = "") {
     steppingStoneCycle *result;
-    int checkpointLevel = domain->level;
 
-    string directions[] = {"up", "right", "down", "left"};
+    string directions[] = {"left", "up", "right", "down"};
     string complementDirection = "";
     if (direction == "up") {
         complementDirection = "down";
@@ -306,8 +302,7 @@ steppingStoneCycle *findSteppingStoneCycle (steppingStoneCycle *&domain, string 
         complementDirection = "right";
     }
 
-    shipment *pShipmentCycle;
-    pShipmentCycle = domain->cycle;
+    shipment *pShipmentCycle = domain->cycle;
     if (!(pShipmentCycle == NULL)) {
         while (pShipmentCycle->next != NULL) {
             pShipmentCycle = pShipmentCycle->next;
@@ -327,7 +322,8 @@ steppingStoneCycle *findSteppingStoneCycle (steppingStoneCycle *&domain, string 
                 if (pShipment->i == domain->target->i && pShipment->j == domain->target->j) {
                     pShipmentCycle->next = pShipment;
                     domain->current = pShipment;
-                    domain->level = checkpointLevel + 1;
+                    domain->solved = true;
+                    rearrangeSteppingStoneCycle(domain);
                     return domain;
                 }
                 pShipment = direction_ == "up" ? pShipment->up 
@@ -336,9 +332,8 @@ steppingStoneCycle *findSteppingStoneCycle (steppingStoneCycle *&domain, string 
                     : pShipment->left;
             }
 
-            if (!(pShipment == NULL) && pShipment->x > 0) {
+            if (!(pShipment == NULL)) {
                 domain->current = pShipment;
-                domain->level = checkpointLevel + 1;
                 if (pShipmentCycle == NULL) {
                     domain->cycle = pShipment;
                 } else {
@@ -346,11 +341,10 @@ steppingStoneCycle *findSteppingStoneCycle (steppingStoneCycle *&domain, string 
                 }
                 
                 result = findSteppingStoneCycle(domain, direction_);
-                if (result->valid) {
+                if (result->solved) {
                     return result;
-                } else { // reset domain
+                } else { // revert
                     domain->current = pShipmentCheckpoint;
-                    domain->level = checkpointLevel;
                     if (pShipmentCycle == NULL) {
                         domain->cycle = NULL;
                     } else {
@@ -360,9 +354,7 @@ steppingStoneCycle *findSteppingStoneCycle (steppingStoneCycle *&domain, string 
             }
         }
     }
-
-    steppingStoneCycle *dummy = new steppingStoneCycle;
-    return dummy;
+    return domain;
 }
 
 transportationProblem steppingStone (transportationProblem network) {
@@ -400,8 +392,7 @@ transportationProblem steppingStone (transportationProblem network) {
                 initiateSteppingStoneCycle(domain, network, pShipment->i, pShipment->j);
                 if (pShipment->x == 0) {
                     result = findSteppingStoneCycle(domain);
-                    if (result->valid) {
-                        rearrangeSteppingStoneShipmentCycle(result);
+                    if (result->solved) {
                         pShipmentCycle = result->cycle;
                         countCellChain = 0;
                         score = 0;
@@ -424,7 +415,6 @@ transportationProblem steppingStone (transportationProblem network) {
         if (minScore < 0) {
             initiateSteppingStoneCycle(domain, network, indexOfCellTarget_i, indexOfCellTarget_j);
             result = findSteppingStoneCycle(domain);
-            rearrangeSteppingStoneShipmentCycle(result);
 
             pShipmentCycle = result->cycle;
             amountChanges = NULL; // nilai minimum dari variable keluar
