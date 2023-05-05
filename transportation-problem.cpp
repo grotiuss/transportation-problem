@@ -20,7 +20,7 @@ struct shipment {
 struct supplierDestination {
     bool valid = false;
     int a;
-    int aTemp; // will be used as 'a value' that will be changed while NWC process
+    int aTemp; // will be used as 'a value' that will be changed while North West Corner process
     int index;
     supplierDestination* next = NULL;
 };
